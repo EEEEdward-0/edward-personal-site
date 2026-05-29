@@ -1636,18 +1636,36 @@ h1 span {
 @media (max-width: 720px) {
   .site-footer {
     grid-template-columns: 1fr;
-    row-gap: 8px;
-    overflow-x: auto;
-    text-align: left;
+    row-gap: 10px;
+    min-height: auto;
+    padding: 16px 22px calc(16px + env(safe-area-inset-bottom));
+    overflow: hidden;
+    text-align: center;
   }
 
   .footer-credit {
     grid-column: 1;
-    justify-self: start;
+    justify-self: center;
+    font-size: 0.95rem;
   }
 
   .footer-powered {
-    width: max-content;
+    width: 100%;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 8px 10px;
+    white-space: normal;
+    line-height: 1.35;
+  }
+
+  .footer-powered > span,
+  .footer-brand {
+    white-space: nowrap;
+  }
+
+  .footer-brand svg {
+    width: 18px;
+    height: 18px;
   }
 }
 
