@@ -21,5 +21,7 @@
 
 ## 部署
 
-项目托管在 GitHub，并计划通过 Cloudflare Pages 部署。
+项目托管在 GitHub，并通过 Cloudflare Pages 部署。
 
+- GitHub: https://github.com/EEEEdward-0/edward-personal-site
+- Cloudflare Pages: https://edward-personal-site.pages.dev
