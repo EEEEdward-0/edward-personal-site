@@ -415,7 +415,7 @@ img {
   position: absolute;
   z-index: 30;
   top: 52px;
-  right: max(18px, calc((100vw - var(--max)) / 2));
+  right: 18px;
   width: min(310px, calc(100vw - 36px));
   border-radius: 18px;
   padding: 16px; /* 适当增加内边距，使内容在单一卡片里更显大气舒适 */
