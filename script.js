@@ -1,5 +1,5 @@
 // ==========================================
-// Part 1: 元素曝光、视差滚动与全局项目链接配置
+// Part 1: 页面元素渐显曝光观测器逻辑
 // ==========================================
 
 const revealItems = document.querySelectorAll(".reveal");
@@ -17,6 +17,10 @@ const revealObserver = new IntersectionObserver(
 );
 
 revealItems.forEach((item) => revealObserver.observe(item));
+
+// ==========================================
+// Part 2: 首屏视差滚动与全局项目链接配置
+// ==========================================
 
 const heroMedia = document.querySelector(".hero-media img");
 const depthLayers = document.querySelectorAll(".hero-depth");
@@ -45,6 +49,10 @@ window.projectLinks = {
 
 const projectLinks = window.projectLinks;
 
+// ==========================================
+// Part 3: 全局节点选择、卡片高亮与外链跳转
+// ==========================================
+
 const workGroups = document.querySelectorAll(".work-accordion .work-group");
 const projectCards = document.querySelectorAll(".project-card[data-project]");
 const infraVisual = document.querySelector(".visual-infra");
@@ -53,7 +61,7 @@ const contactPopover = document.querySelector("#contact-popover");
 const menuToggle = document.querySelector(".menu-toggle");
 const navLinks = document.querySelector(".nav-links");
 const topbar = document.querySelector(".topbar");
-let setContactOpen = () => { };
+let setContactOpen = () => {};
 
 const selectProject = (projectId) => {
   projectCards.forEach((card) => {
@@ -69,7 +77,7 @@ const openProjectLink = (projectId) => {
 };
 
 // ==========================================
-// Part 2: 手风琴折叠、卡片监听与联系人悬浮窗
+// Part 4: 手风琴折叠展开与无障碍属性联动
 // ==========================================
 
 workGroups.forEach((item, index) => {
@@ -89,7 +97,7 @@ workGroups.forEach((item, index) => {
 
     workGroups.forEach((group) => {
       const groupTrigger = group.querySelector(".work-group-trigger");
-
+      
       if (group === item) {
         const newState = !isCurrentlyOpen;
         group.classList.toggle("is-open", newState);
@@ -104,6 +112,10 @@ workGroups.forEach((item, index) => {
     });
   });
 });
+
+// ==========================================
+// Part 5: 卡片键盘监听与联系人悬浮窗交互
+// ==========================================
 
 projectCards.forEach((card) => {
   card.addEventListener("click", () => openProjectLink(card.dataset.project));
@@ -155,8 +167,9 @@ if (contactToggle && contactPopover) {
     }
   });
 }
+
 // ==========================================
-// Part 3: 响应式菜单、基础设施动画与项目图标
+// Part 6: 响应式侧边栏菜单导航联动控制
 // ==========================================
 
 if (menuToggle && navLinks) {
@@ -222,6 +235,10 @@ if (menuToggle && navLinks) {
   compactNav.addEventListener("change", syncCompactNav);
   syncCompactNav();
 }
+
+// ==========================================
+// Part 7: 基础设施服务器打点动画与图标曝光激活
+// ==========================================
 
 if (infraVisual) {
   const serverDots = [...infraVisual.querySelectorAll("b")];
@@ -320,9 +337,10 @@ if (projectIcons.length > 0) {
     icon.addEventListener("touchstart", () => playProjectIcon(icon), { passive: true });
   });
 }
-// ==========================================
-// Part 4: GitHub 代码语言图表渲染与数据处理
-// ==========================================
+
+// ===================================================
+// Part 8: GitHub 语言图表渲染层（已纠正降序排列参数）
+// ===================================================
 
 const languageChart = document.querySelector("#language-chart");
 const languageStatus = document.querySelector("#language-panel-status");
@@ -361,9 +379,10 @@ if (languageChart) {
   };
 
   const renderLanguages = (languageTotals, sourceText) => {
+    // 核心修复：采用显式数字相减的隐式返回进行解构排序，完全纠正原先写反的列表顺序
     const entries = Object.entries(languageTotals)
       .filter(([, bytes]) => bytes > 0)
-      .sort(([, bBytes], [, aBytes]) => bBytes - aBytes)
+      .sort(([ , aBytes], [ , bBytes]) => bBytes - aBytes)
       .slice(0, 7);
 
     const total = entries.reduce((sum, [, bytes]) => sum + bytes, 0) || 1;
@@ -428,6 +447,7 @@ if (languageChart) {
 
   const loadGitHubLanguages = async () => {
     try {
+      // 核心对齐：直接以绝对完整路径安全直呼您配好密钥的边缘云端独立数据代理
       const pagesFunctionResponse = await fetch("https://dpdns.org", {
         headers: { Accept: "application/json" },
       });
@@ -439,7 +459,7 @@ if (languageChart) {
           return;
         }
       }
-      throw new Error("Fallback to client fetching");
+      throw new Error("Fallback");
     } catch (error) {
       renderLanguages(fallbackLanguages, "GitHub API 暂不可用，当前展示本地项目技术栈估算。");
     }
@@ -448,9 +468,10 @@ if (languageChart) {
   renderLanguages(fallbackLanguages, "正在读取 GitHub 公开仓库语言统计。");
   loadGitHubLanguages();
 }
-// ===================================================
-// Part 5-1: 监控大盘数据采样与 Canvas / SVG 路径计算生成
-// ===================================================
+
+// ==========================================
+// Part 9: 监控图表曲线生成与采样队列处理
+// ==========================================
 
 const agentDashboard = document.querySelector("[data-agent-dashboard]");
 if (agentDashboard) {
@@ -546,9 +567,10 @@ if (agentDashboard) {
     agentDashboard.classList.toggle("is-open", isOpen);
     agentBody.hidden = !isOpen;
   };
-  // ===================================================
-  // Part 5-2: 监控面板就绪赋值、本地网桥幽灵探针与最终闭合
-  // ===================================================
+
+// ===================================================
+// Part 10: 硬件嗅探、隐式图片探针、AI 补丁与最终大闭环
+// ===================================================
 
   const setAgentUnavailable = (summary = "未检测到可读取的本机 Agent 状态接口。") => {
     agentDashboard.classList.add("is-unavailable");
@@ -599,8 +621,8 @@ if (agentDashboard) {
         typeof payload.cpuCoreCount === "number"
           ? `按 ${payload.cpuCoreCount} 核归一化`
           : typeof payload.activeProcessCount === "number"
-            ? `${payload.activeProcessCount} 个进程有活动`
-            : "运行环境待采样";
+          ? `${payload.activeProcessCount} 个进程有活动`
+          : "运行环境待采样";
     }
     if (agentMemory) agentMemory.textContent = typeof payload.memoryMb === "number" ? `${payload.memoryMb.toFixed(1)} MB` : "--";
     if (agentMemoryNote) {
@@ -675,13 +697,13 @@ if (agentDashboard) {
       modelProvider: hasUsableBuiltInAi
         ? `可能是 Google Gemini Nano（Chrome Built-in AI: ${builtInAiAvailability}）`
         : builtInAiAvailability
-          ? `无法确认；Chrome Built-in AI 接口存在，但当前状态为 ${builtInAiAvailability}`
-          : "无法判断；MediaPipe/WebGPU 是运行环境，具体厂商取决于加载的模型文件",
+        ? `无法确认；Chrome Built-in AI 接口存在，但当前状态为 ${builtInAiAvailability}`
+        : "无法判断；MediaPipe/WebGPU 是运行环境，具体厂商取决于加载的模型文件",
       summary: hasUsableBuiltInAi
         ? "检测到当前浏览器可创建 WebGPU Adapter，且存在 Chrome Built-in AI 语言模型接口；该接口通常对应 Google Gemini Nano。"
         : builtInAiAvailability
-          ? "检测到当前浏览器可创建 WebGPU Adapter，且存在 Chrome Built-in AI 语言模型接口；但当前内置模型不可用。"
-          : "检测到当前浏览器可创建 WebGPU Adapter，可接入 MediaPipe LLM Inference Web 运行时；但尚未加载具体模型文件，无法判断模型厂商。",
+        ? "检测到当前浏览器可创建 WebGPU Adapter，且存在 Chrome Built-in AI 语言模型接口；但当前内置模型不可用。"
+        : "检测到当前浏览器可创建 WebGPU Adapter，可接入 MediaPipe LLM Inference Web 运行时；但尚未加载具体模型文件，无法判断模型厂商。",
     };
   };
 
@@ -705,7 +727,7 @@ if (agentDashboard) {
           setAgentReady(payload);
           nextRefreshMs = payload.refreshMs || 1000;
         }
-      } catch (error) { }
+      } catch (error) {}
     };
 
     probe.onerror = async () => {
@@ -732,3 +754,4 @@ if (agentDashboard) {
 
   scheduleAgentStatusLoad();
 }
+
