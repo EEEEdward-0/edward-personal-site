@@ -35,10 +35,10 @@ const listCodexProcesses = async () => {
         const match = line.match(/^(\d+)\s+([\d.]+)\s+(\d+)/);
         return match
           ? {
-              pid: match[1],
-              cpu: Number.parseFloat(match[2]) || 0,
-              memoryKb: Number.parseInt(match[3], 10) || 0,
-            }
+            pid: match[1],
+            cpu: Number.parseFloat(match[2]) || 0,
+            memoryKb: Number.parseInt(match[3], 10) || 0,
+          }
           : null;
       })
       .filter(Boolean);
@@ -93,7 +93,7 @@ const server = createServer(async (request, response) => {
 
   const url = new URL(request.url || "/", `http://${request.headers.host || `${host}:${port}`}`);
 
-  if (request.method !== "GET" || url.pathname !== "/agent-status") {
+  if (request.method !== "GET" || (url.pathname !== "/agent-status" && url.pathname !== "/api/agent-status")) {
     sendJson(response, 404, { available: false, error: "Not found" });
     return;
   }
