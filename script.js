@@ -305,3 +305,100 @@ if (projectIcons.length > 0) {
     icon.addEventListener("touchstart", () => playProjectIcon(icon), { passive: true });
   });
 }
+
+const languageChart = document.querySelector("#language-chart");
+const languageStatus = document.querySelector("#language-panel-status");
+
+if (languageChart) {
+  const githubUser = "EEEEdward-0";
+  const languageColors = {
+    Swift: "#111827",
+    Python: "#1f6feb",
+    JavaScript: "#f2cc60",
+    HTML: "#f97316",
+    CSS: "#38bdf8",
+    Shell: "#10b981",
+    Java: "#ef4444",
+    "Jupyter Notebook": "#8b5cf6",
+    C: "#64748b",
+    "C++": "#475569",
+  };
+  const fallbackLanguages = {
+    Python: 420000,
+    Swift: 260000,
+    JavaScript: 170000,
+    HTML: 120000,
+    CSS: 90000,
+    Shell: 68000,
+  };
+
+  const formatBytes = (bytes) => {
+    if (bytes >= 1000000) return `${(bytes / 1000000).toFixed(1)} MB`;
+    if (bytes >= 1000) return `${Math.round(bytes / 1000)} KB`;
+    return `${bytes} B`;
+  };
+
+  const renderLanguages = (languageTotals, sourceText) => {
+    const entries = Object.entries(languageTotals)
+      .filter(([, bytes]) => bytes > 0)
+      .sort((a, b) => b[1] - a[1])
+      .slice(0, 7);
+    const total = entries.reduce((sum, [, bytes]) => sum + bytes, 0) || 1;
+
+    languageChart.innerHTML = entries
+      .map(([language, bytes], index) => {
+        const percent = Math.max((bytes / total) * 100, 3);
+        const color = languageColors[language] || "#8e8e93";
+        const duration = 2300 + Math.floor(Math.random() * 900);
+        const delay = index * 110 + Math.floor(Math.random() * 120);
+        const springMax = (1.018 + Math.random() * 0.035).toFixed(3);
+        const springMin = (0.975 + Math.random() * 0.018).toFixed(3);
+        return `
+          <div class="language-row" role="listitem" aria-label="${language}，${percent.toFixed(1)}%，${formatBytes(bytes)}">
+            <span class="language-name">${language}</span>
+            <span class="language-track" aria-hidden="true">
+              <span class="language-bar" style="--language-size: ${percent.toFixed(2)}%; --language-color: ${color}; --language-delay: ${delay}ms; --language-duration: ${duration}ms; --language-spring-max: ${springMax}; --language-spring-min: ${springMin};"></span>
+            </span>
+            <span class="language-value">${percent.toFixed(1)}%</span>
+          </div>
+        `;
+      })
+      .join("");
+
+    if (languageStatus) {
+      languageStatus.textContent = sourceText;
+    }
+  };
+
+  const loadGitHubLanguages = async () => {
+    try {
+      const reposResponse = await fetch(`https://api.github.com/users/${githubUser}/repos?per_page=100&sort=updated`);
+      if (!reposResponse.ok) throw new Error("GitHub repositories unavailable");
+
+      const repos = await reposResponse.json();
+      const publicRepos = repos.filter((repo) => !repo.fork && repo.languages_url).slice(0, 18);
+      const languageMaps = await Promise.all(
+        publicRepos.map(async (repo) => {
+          const response = await fetch(repo.languages_url);
+          if (!response.ok) return {};
+          return response.json();
+        })
+      );
+
+      const totals = languageMaps.reduce((acc, languages) => {
+        Object.entries(languages).forEach(([language, bytes]) => {
+          acc[language] = (acc[language] || 0) + bytes;
+        });
+        return acc;
+      }, {});
+
+      if (Object.keys(totals).length === 0) throw new Error("No language data");
+      renderLanguages(totals, "基于 GitHub 公开仓库语言字节数统计。");
+    } catch (error) {
+      renderLanguages(fallbackLanguages, "GitHub API 暂不可用，当前展示本地项目技术栈估算。");
+    }
+  };
+
+  renderLanguages(fallbackLanguages, "正在读取 GitHub 公开仓库语言统计。");
+  loadGitHubLanguages();
+}

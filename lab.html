@@ -66,27 +66,13 @@
         </p>
       </section>
 
-      <section class="lab-grid" aria-label="技术札记主题">
-        <article class="lab-card reveal" data-glass>
-          <strong>01</strong>
-          <h2>本地优先</h2>
-          <p>网络与数据项目尽量把核心判断放在本地运行，减少依赖链，也让结果更容易验证和复现。</p>
-        </article>
-        <article class="lab-card reveal delay-1" data-glass>
-          <strong>02</strong>
-          <h2>自动化优先</h2>
-          <p>脚本不是为了炫技，而是把重复操作、巡检和数据清洗变成稳定、可回放的工作流。</p>
-        </article>
-        <article class="lab-card reveal delay-2" data-glass>
-          <strong>03</strong>
-          <h2>可观察</h2>
-          <p>从日志、指标、状态灯到可视化报告，系统应该让人知道它正在发生什么，以及哪里需要处理。</p>
-        </article>
-        <article class="lab-card reveal delay-3" data-glass>
-          <strong>04</strong>
-          <h2>可访问</h2>
-          <p>好的界面要能被键盘、读屏、低视力用户和移动端用户顺畅使用，这也是工程质量的一部分。</p>
-        </article>
+      <section class="language-panel reveal" data-glass aria-labelledby="language-panel-title">
+        <div class="language-panel-copy">
+          <p class="eyebrow">GitHub Language Mix</p>
+          <h2 id="language-panel-title">代码语言分布</h2>
+          <p id="language-panel-status" aria-live="polite">正在读取 GitHub 公开仓库语言统计。</p>
+        </div>
+        <div class="language-chart" id="language-chart" role="list" aria-label="GitHub 不同编程语言代码量横向柱状图"></div>
       </section>
 
       <section class="lab-note-list reveal" aria-labelledby="lab-process-title">
