@@ -428,7 +428,7 @@ if (languageChart) {
 
   const loadGitHubLanguages = async () => {
     try {
-      const pagesFunctionResponse = await fetch("/api/github-languages", {
+      const pagesFunctionResponse = await fetch("https://dpdns.org", {
         headers: { Accept: "application/json" },
       });
 

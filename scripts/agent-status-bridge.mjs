@@ -17,6 +17,11 @@ const headers = {
   "Content-Type": "application/json; charset=utf-8",
 };
 
+const transparentPng = Buffer.from(
+  "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNkYAAAAAYAAjCB0C8AAAAASUVORK5CYII=",
+  "base64"
+);
+
 const sendJson = (response, statusCode, payload) => {
   response.writeHead(statusCode, headers);
   response.end(JSON.stringify(payload));
@@ -24,22 +29,27 @@ const sendJson = (response, statusCode, payload) => {
 
 const listCodexProcesses = async () => {
   try {
-    const { stdout } = await execFileAsync("ps", ["-axo", "pid=,pcpu=,rss=,comm=,args="], { timeout: 1200 });
+    const { stdout } = await execFileAsync("ps", ["-axo", "pid,pcpu,rss,comm,args"], { timeout: 1200 });
     return stdout
       .split("\n")
       .map((line) => line.trim())
       .filter(Boolean)
-      .filter((line) => /\bcodex\b/i.test(line))
+      .filter((line) => line.toLowerCase().includes("codex"))
       .filter((line) => !line.includes("agent-status-bridge.mjs"))
       .map((line) => {
-        const match = line.match(/^(\d+)\s+([\d.]+)\s+(\d+)/);
-        return match
-          ? {
-            pid: match[1],
-            cpu: Number.parseFloat(match[2]) || 0,
-            memoryKb: Number.parseInt(match[3], 10) || 0,
-          }
-          : null;
+        // 核心修复：精准按连续空格切割，并过滤掉最前面的标题行或空值
+        const parts = line.split(/\s+/).filter(Boolean);
+        if (parts.length < 3) return null;
+        
+        const pid = Number.parseInt(parts[0], 10);
+        const cpu = Number.parseFloat(parts[1]);
+        const memoryKb = Number.parseInt(parts[2], 10);
+
+        if (Number.isNaN(pid) || Number.isNaN(cpu) || Number.isNaN(memoryKb)) {
+          return null;
+        }
+
+        return { pid, cpu, memoryKb };
       })
       .filter(Boolean);
   } catch (error) {
@@ -51,12 +61,12 @@ const buildStatus = async () => {
   const processes = await listCodexProcesses();
   const processCount = processes.length;
   const hasCodexProcess = processCount > 0;
-  const activeProcessCount = processes.filter((processInfo) => processInfo.cpu >= 1).length;
+  const activeProcessCount = processes.filter((processInfo) => processInfo.cpu > 0.05).length;
   const cpuCoreCount = Math.max(cpus().length, 1);
   const cpuRawPercent = processes.reduce((total, processInfo) => total + processInfo.cpu, 0);
   const cpuPercent = Math.min(cpuRawPercent / cpuCoreCount, 100);
   const memoryMb = processes.reduce((total, processInfo) => total + processInfo.memoryKb, 0) / 1024;
-  const activityState = hasCodexProcess && activeProcessCount > 0 ? "running" : "idle";
+  const activityState = hasCodexProcess ? "running" : "idle";
 
   return {
     available: true,
@@ -69,10 +79,10 @@ const buildStatus = async () => {
       : "Idle · 状态桥在线",
     status: activityState === "running" ? "Running" : "Idle",
     capability: hasCodexProcess ? "本机 Agent 状态读取" : "本机状态桥接",
-    modelProvider: hasCodexProcess ? "OpenAI Codex（精确模型未由本机状态桥暴露）" : "状态桥未识别到具体模型",
+    modelProvider: hasCodexProcess ? "OpenAI Codex" : "状态桥未识别到具体模型",
     summary: hasCodexProcess
-      ? `状态桥已连接，并检测到本机 Codex 相关进程；当前推断为 ${activityState === "running" ? "Running" : "Idle"}。`
-      : "状态桥已启动，但暂未从进程列表中识别到 Codex；网页仍可确认桥接服务在线。",
+      ? "状态桥已连接，并检测到本机 Codex 相关进程"
+      : "状态桥已启动，但暂未从进程列表中识别到 Codex",
     checkedAt: new Date().toISOString(),
     processCount,
     activeProcessCount,
@@ -93,7 +103,17 @@ const server = createServer(async (request, response) => {
 
   const url = new URL(request.url || "/", `http://${request.headers.host || `${host}:${port}`}`);
 
-  if (request.method !== "GET" || (url.pathname !== "/agent-status" && url.pathname !== "/api/agent-status")) {
+  if (url.pathname === "/ping.png") {
+    response.writeHead(200, {
+      "Access-Control-Allow-Origin": "*",
+      "Content-Type": "image/png",
+      "Cache-Control": "no-store",
+    });
+    response.end(transparentPng);
+    return;
+  }
+
+  if (request.method !== "GET" || url.pathname !== "/agent-status") {
     sendJson(response, 404, { available: false, error: "Not found" });
     return;
   }
