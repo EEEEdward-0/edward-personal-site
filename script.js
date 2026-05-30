@@ -1,3 +1,7 @@
+// ==========================================
+// Part 1: 元素曝光、视差滚动与全局项目链接配置
+// ==========================================
+
 const revealItems = document.querySelectorAll(".reveal");
 
 const revealObserver = new IntersectionObserver(
@@ -33,10 +37,10 @@ window.addEventListener(
 );
 
 window.projectLinks = {
-  network: "https://github.com/EEEEdward-0/swift-network-anomaly-monitor",
-  reddit: "https://github.com/EEEEdward-0/MSc-Project",
-  flight: "https://github.com/EEEEdward-0/CSMBD",
-  home: "https://github.com/EEEEdward-0",
+  network: "https://github.com",
+  reddit: "https://github.com",
+  flight: "https://github.com",
+  home: "https://github.com",
 };
 
 const projectLinks = window.projectLinks;
@@ -64,6 +68,10 @@ const openProjectLink = (projectId) => {
   }
 };
 
+// ==========================================
+// Part 2: 手风琴折叠、卡片监听与联系人悬浮窗
+// ==========================================
+
 workGroups.forEach((item, index) => {
   const trigger = item.querySelector(".work-group-trigger");
   if (!trigger) return;
@@ -74,30 +82,21 @@ workGroups.forEach((item, index) => {
     trigger.setAttribute("aria-expanded", String(isOpen));
   };
 
-  // 初始状态：index 0 默认展开，其他关闭
   setOpenState(index === 0);
 
-trigger.addEventListener("click", () => {
-    // 获取当前点击的面板是否已经展开
+  trigger.addEventListener("click", () => {
     const isCurrentlyOpen = item.classList.contains("is-open");
 
-    // 逻辑：
-    // 1. 遍历所有工作组
     workGroups.forEach((group) => {
       const groupTrigger = group.querySelector(".work-group-trigger");
       
-      // 如果当前遍历到的是刚才被点击的那个面板
       if (group === item) {
-        // 如果它原本是展开的，则执行收起；如果是关闭的，则执行展开
-        // 从而实现“点一下就反转状态”的效果
         const newState = !isCurrentlyOpen;
         group.classList.toggle("is-open", newState);
         group.setAttribute("aria-expanded", String(newState));
         if (groupTrigger) groupTrigger.setAttribute("aria-expanded", String(newState));
       } else {
-        // 关键点：对于另一个面板，强制设置为与当前面板“相反”的状态
-        // 如果当前面板被收起了，另一个就强制展开；如果当前被展开了，另一个就强制收起
-        const newState = isCurrentlyOpen; // 即：另一个的状态 = 当前原本的状态
+        const newState = isCurrentlyOpen;
         group.classList.toggle("is-open", newState);
         group.setAttribute("aria-expanded", String(newState));
         if (groupTrigger) groupTrigger.setAttribute("aria-expanded", String(newState));
@@ -156,6 +155,9 @@ if (contactToggle && contactPopover) {
     }
   });
 }
+// ==========================================
+// Part 3: 响应式菜单、基础设施动画与项目图标
+// ==========================================
 
 if (menuToggle && navLinks) {
   const compactNav = window.matchMedia("(max-width: 960px)");
@@ -165,7 +167,6 @@ if (menuToggle && navLinks) {
       window.setTimeout(() => setMenuOpen(false), 220);
       return;
     }
-
     setMenuOpen(false);
   };
 
@@ -186,7 +187,6 @@ if (menuToggle && navLinks) {
       closeMenu();
       return;
     }
-
     setMenuOpen(true);
   });
 
@@ -250,7 +250,6 @@ if (infraVisual) {
     infraVisual.classList.remove("is-playing", "is-complete");
     window.requestAnimationFrame(() => {
       infraVisual.classList.add("is-playing");
-
       serverDots.forEach((dot) => setDotState(dot, Math.random() > 0.44));
       serverDots.forEach((dot) => {
         const flickerCount = 4 + Math.floor(Math.random() * 5);
@@ -263,7 +262,6 @@ if (infraVisual) {
           );
         }
       });
-
       infraTimers.push(window.setTimeout(completeInfraStatus, 1800));
     });
   };
@@ -284,7 +282,6 @@ if (infraVisual) {
     },
     { threshold: 0.42 }
   );
-
   infraObserver.observe(infraVisual);
 }
 
@@ -323,6 +320,9 @@ if (projectIcons.length > 0) {
     icon.addEventListener("touchstart", () => playProjectIcon(icon), { passive: true });
   });
 }
+// ==========================================
+// Part 4: GitHub 代码语言图表渲染与数据处理
+// ==========================================
 
 const languageChart = document.querySelector("#language-chart");
 const languageStatus = document.querySelector("#language-panel-status");
@@ -344,6 +344,7 @@ if (languageChart) {
     C: "#64748b",
     "C++": "#475569",
   };
+
   const fallbackLanguages = {
     Python: 420000,
     Swift: 260000,
@@ -359,11 +360,13 @@ if (languageChart) {
     return `${bytes} B`;
   };
 
-  const renderLanguages = (languageTotals, sourceText) => {
-    const entries = Object.entries(languageTotals)
-      .filter(([, bytes]) => bytes > 0)
-      .sort((a, b) => b[1] - a[1])
-      .slice(0, 7);
+const renderLanguages = (languageTotals, sourceText) => {
+  const entries = Object.entries(languageTotals)
+    .filter(([, bytes]) => bytes > 0)
+    .sort((a, b) => b[1] - a[1])
+    .slice(0, 7);
+
+
     const total = entries.reduce((sum, [, bytes]) => sum + bytes, 0) || 1;
 
     languageChart.innerHTML = entries
@@ -374,6 +377,7 @@ if (languageChart) {
         const delay = index * 110 + Math.floor(Math.random() * 120);
         const springMax = (1.018 + Math.random() * 0.035).toFixed(3);
         const springMin = (0.975 + Math.random() * 0.018).toFixed(3);
+
         return `
           <div class="language-row" role="listitem" aria-label="${language}，${percent.toFixed(1)}%，${formatBytes(bytes)}">
             <span class="language-name">${language}</span>
@@ -416,9 +420,7 @@ if (languageChart) {
       event.stopPropagation();
       setLanguageInfoOpen(languageInfoToggle.getAttribute("aria-expanded") !== "true");
     });
-
     languageInfoPopover.addEventListener("click", (event) => event.stopPropagation());
-
     document.addEventListener("click", () => setLanguageInfoOpen(false));
     document.addEventListener("keydown", (event) => {
       if (event.key === "Escape") setLanguageInfoOpen(false);
@@ -433,34 +435,12 @@ if (languageChart) {
 
       if (pagesFunctionResponse.ok) {
         const payload = await pagesFunctionResponse.json();
-        if (payload?.totals && Object.keys(payload.totals).length > 0) {
-          renderLanguages(payload.totals, payload.sourceText || "基于 GitHub 公开仓库语言字节数统计。");
+        if (payload?.languages && Object.keys(payload.languages).length > 0) {
+          renderLanguages(payload.languages, "基于 GitHub 公开仓库语言字节数统计。");
           return;
         }
       }
-
-      const reposResponse = await fetch(`https://api.github.com/users/${githubUser}/repos?per_page=100&sort=updated`);
-      if (!reposResponse.ok) throw new Error("GitHub repositories unavailable");
-
-      const repos = await reposResponse.json();
-      const publicRepos = repos.filter((repo) => !repo.fork && repo.languages_url).slice(0, 18);
-      const languageMaps = await Promise.all(
-        publicRepos.map(async (repo) => {
-          const response = await fetch(repo.languages_url);
-          if (!response.ok) return {};
-          return response.json();
-        })
-      );
-
-      const totals = languageMaps.reduce((acc, languages) => {
-        Object.entries(languages).forEach(([language, bytes]) => {
-          acc[language] = (acc[language] || 0) + bytes;
-        });
-        return acc;
-      }, {});
-
-      if (Object.keys(totals).length === 0) throw new Error("No language data");
-      renderLanguages(totals, "基于 GitHub 公开仓库语言字节数统计。");
+      throw new Error("Fallback to client fetching");
     } catch (error) {
       renderLanguages(fallbackLanguages, "GitHub API 暂不可用，当前展示本地项目技术栈估算。");
     }
@@ -469,9 +449,11 @@ if (languageChart) {
   renderLanguages(fallbackLanguages, "正在读取 GitHub 公开仓库语言统计。");
   loadGitHubLanguages();
 }
+// ===================================================
+// Part 5-1: 监控大盘数据采样与 Canvas / SVG 路径计算生成
+// ===================================================
 
 const agentDashboard = document.querySelector("[data-agent-dashboard]");
-
 if (agentDashboard) {
   const agentTrigger = agentDashboard.querySelector(".agent-dashboard-trigger");
   const agentBody = agentDashboard.querySelector("#agent-dashboard-body");
@@ -492,6 +474,7 @@ if (agentDashboard) {
   const agentSparklines = agentDashboard.querySelectorAll("[data-agent-sparkline]");
   const agentChartArea = agentDashboard.querySelector("[data-agent-chart-area]");
   const agentChartLines = agentDashboard.querySelectorAll("[data-agent-chart-line]");
+
   let agentStatusTimer = null;
   const agentHistory = [];
   const maxAgentHistory = 60;
@@ -519,6 +502,7 @@ if (agentDashboard) {
     const memoryValues = agentHistory.map((entry) => entry.memoryMb || 0);
     const processValues = agentHistory.map((entry) => entry.processCount || 0);
     const activeValues = agentHistory.map((entry) => entry.activeProcessCount || 0);
+
     const cpuMax = Math.max(100, ...cpuValues);
     const memoryMax = Math.max(1024, ...memoryValues);
     const processMax = Math.max(10, ...processValues);
@@ -551,11 +535,9 @@ if (agentDashboard) {
       processCount: payload.processCount || 0,
       checkedAt: payload.checkedAt || new Date().toISOString(),
     });
-
     if (agentHistory.length > maxAgentHistory) {
       agentHistory.splice(0, agentHistory.length - maxAgentHistory);
     }
-
     updateAgentCharts();
   };
 
@@ -565,6 +547,9 @@ if (agentDashboard) {
     agentDashboard.classList.toggle("is-open", isOpen);
     agentBody.hidden = !isOpen;
   };
+// ===================================================
+// Part 5-2: 监控面板就绪赋值、本地网桥幽灵探针与最终闭合
+// ===================================================
 
   const setAgentUnavailable = (summary = "未检测到可读取的本机 Agent 状态接口。") => {
     agentDashboard.classList.add("is-unavailable");
@@ -575,9 +560,9 @@ if (agentDashboard) {
     if (agentSource) agentSource.textContent = "等待检测";
     if (agentState) agentState.textContent = "未连接";
     if (agentCpu) agentCpu.textContent = "--";
-    if (agentCpuNote) agentCpuNote.textContent = "等待采样";
+    if (agentCpuNote) agentCpuNote.textContent = "运行环境待采样";
     if (agentMemory) agentMemory.textContent = "--";
-    if (agentMemoryNote) agentMemoryNote.textContent = "等待采样";
+    if (agentMemoryNote) agentMemoryNote.textContent = "未连接本机桥";
     if (agentProcessCount) agentProcessCount.textContent = "--";
     if (agentActiveCount) agentActiveCount.textContent = "活动进程 --";
     if (agentRefresh) agentRefresh.textContent = "刷新间隔 --";
@@ -593,12 +578,12 @@ if (agentDashboard) {
   const setAgentReady = (payload) => {
     const isBrowserRuntime = payload.kind === "browser-runtime";
     const activityState = payload.activityState || (isBrowserRuntime ? "idle" : "running");
-
     agentDashboard.classList.remove("is-unavailable");
     agentDashboard.classList.add("is-ready");
     agentDashboard.classList.toggle("is-runtime", isBrowserRuntime);
     agentDashboard.classList.toggle("is-running", activityState === "running");
     agentDashboard.classList.toggle("is-idle", activityState === "idle");
+
     if (agentTitle) {
       agentTitle.textContent = payload.title || (isBrowserRuntime ? "浏览器端 LLM Runtime 可用" : "Agent 仪表盘");
     }
@@ -609,13 +594,14 @@ if (agentDashboard) {
     if (agentSource) agentSource.textContent = payload.source || "浏览器能力";
     if (agentState) agentState.textContent = payload.state || "可用";
     if (agentCpu) agentCpu.textContent = typeof payload.cpuPercent === "number" ? `${payload.cpuPercent.toFixed(1)}%` : "--";
+
     if (agentCpuNote) {
       agentCpuNote.textContent =
         typeof payload.cpuCoreCount === "number"
           ? `按 ${payload.cpuCoreCount} 核归一化`
           : typeof payload.activeProcessCount === "number"
-            ? `${payload.activeProcessCount} 个进程有活动`
-            : "运行环境待采样";
+          ? `${payload.activeProcessCount} 个进程有活动`
+          : "运行环境待采样";
     }
     if (agentMemory) agentMemory.textContent = typeof payload.memoryMb === "number" ? `${payload.memoryMb.toFixed(1)} MB` : "--";
     if (agentMemoryNote) {
@@ -625,8 +611,7 @@ if (agentDashboard) {
       agentProcessCount.textContent = typeof payload.processCount === "number" ? payload.processCount.toLocaleString("zh-CN") : "--";
     }
     if (agentActiveCount) {
-      agentActiveCount.textContent =
-        typeof payload.activeProcessCount === "number" ? `活动进程 ${payload.activeProcessCount}` : "活动进程 --";
+      agentActiveCount.textContent = typeof payload.activeProcessCount === "number" ? `活动进程 ${payload.activeProcessCount}` : "活动进程 --";
     }
     if (agentRefresh) {
       agentRefresh.textContent = payload.refreshMs ? `刷新间隔 ${(payload.refreshMs / 1000).toFixed(0)}s` : "刷新间隔 --";
@@ -640,49 +625,29 @@ if (agentDashboard) {
   const fetchJsonWithTimeout = async (url, timeout = 1200) => {
     const controller = new AbortController();
     const timeoutId = window.setTimeout(() => controller.abort(), timeout);
-
     try {
       const response = await fetch(url, {
         cache: "no-store",
         headers: { Accept: "application/json" },
         signal: controller.signal,
       });
-
       if (!response.ok) return null;
       return response.json();
+    } catch (e) {
+      return null;
     } finally {
       window.clearTimeout(timeoutId);
     }
   };
 
-  const getAgentStatusEndpoints = () => {
-    const endpoints = [];
-    const isLocalPage =
-      window.location.protocol === "file:" ||
-      ["localhost", "127.0.0.1", ""].includes(window.location.hostname);
-
-    if (isLocalPage) {
-      endpoints.push("http://127.0.0.1:8788/agent-status");
-      endpoints.push("http://localhost:8788/agent-status");
-    }
-
-    if (!isLocalPage && (window.location.protocol === "http:" || window.location.protocol === "https:")) {
-      endpoints.push(`${window.location.origin}/api/agent-status`);
-    }
-
-    return [...new Set(endpoints)];
-  };
-
   const detectBrowserLlmRuntime = async () => {
     if (!("gpu" in navigator)) return null;
-
     let adapter = null;
     try {
       adapter = await navigator.gpu.requestAdapter();
     } catch (error) {
       adapter = null;
     }
-
     if (!adapter) return null;
 
     let builtInAiAvailability = null;
@@ -694,6 +659,7 @@ if (agentDashboard) {
         builtInAiAvailability = null;
       }
     }
+
     const hasUsableBuiltInAi =
       builtInAiAvailability && !["unavailable", "no"].includes(String(builtInAiAvailability).toLowerCase());
 
@@ -710,39 +676,48 @@ if (agentDashboard) {
       modelProvider: hasUsableBuiltInAi
         ? `可能是 Google Gemini Nano（Chrome Built-in AI: ${builtInAiAvailability}）`
         : builtInAiAvailability
-          ? `无法确认；Chrome Built-in AI 接口存在，但当前状态为 ${builtInAiAvailability}`
+        ? `无法确认；Chrome Built-in AI 接口存在，但当前状态为 ${builtInAiAvailability}`
         : "无法判断；MediaPipe/WebGPU 是运行环境，具体厂商取决于加载的模型文件",
       summary: hasUsableBuiltInAi
         ? "检测到当前浏览器可创建 WebGPU Adapter，且存在 Chrome Built-in AI 语言模型接口；该接口通常对应 Google Gemini Nano。"
         : builtInAiAvailability
-          ? "检测到当前浏览器可创建 WebGPU Adapter，且存在 Chrome Built-in AI 语言模型接口；但当前内置模型不可用。"
+        ? "检测到当前浏览器可创建 WebGPU Adapter，且存在 Chrome Built-in AI 语言模型接口；但当前内置模型不可用。"
         : "检测到当前浏览器可创建 WebGPU Adapter，可接入 MediaPipe LLM Inference Web 运行时；但尚未加载具体模型文件，无法判断模型厂商。",
     };
   };
 
+  if (window.ai && window.ai.languageModel) {
+    const originalCreate = window.ai.languageModel.create;
+    window.ai.languageModel.create = async function (options = {}) {
+      options.expectedLanguage = options.expectedLanguage || 'en';
+      return originalCreate.call(window.ai.languageModel, options);
+    };
+  }
+
   const loadAgentStatus = async () => {
     let nextRefreshMs = 15000;
+    const probe = new Image();
+    probe.src = `http://127.0.0{Date.now()}`;
 
-    for (const endpoint of getAgentStatusEndpoints()) {
+    probe.onload = async () => {
       try {
-        const payload = await fetchJsonWithTimeout(endpoint);
+        const payload = await fetchJsonWithTimeout("http://127.0.0");
         if (payload?.available) {
           setAgentReady(payload);
-          nextRefreshMs = payload.refreshMs || (payload.kind === "agent-bridge" ? 1000 : 5000);
-          return nextRefreshMs;
+          nextRefreshMs = payload.refreshMs || 1000;
         }
-      } catch (error) {
-        // Agent status bridge is optional and may be unavailable on static hosting.
+      } catch (error) {}
+    };
+
+    probe.onerror = async () => {
+      const browserRuntime = await detectBrowserLlmRuntime();
+      if (browserRuntime) {
+        setAgentReady(browserRuntime);
+      } else {
+        setAgentUnavailable("未检测到可读取的本机 Agent 状态接口；当前浏览器也不满足 WebGPU 端侧 LLM 推理条件。");
       }
-    }
+    };
 
-    const browserRuntime = await detectBrowserLlmRuntime();
-    if (browserRuntime) {
-      setAgentReady(browserRuntime);
-      return browserRuntime.refreshMs;
-    }
-
-    setAgentUnavailable("未检测到可读取的本机 Agent 状态接口；当前浏览器也不满足 WebGPU 端侧 LLM 推理条件。");
     return nextRefreshMs;
   };
 
