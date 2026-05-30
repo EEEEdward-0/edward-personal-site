@@ -25,14 +25,17 @@
         <span class="brand-mark">EZ</span>
         <span>Edward Zheng</span>
       </a>
-      <nav class="nav-links" aria-label="主导航">
+      <button class="menu-toggle" type="button" aria-expanded="false" aria-controls="primary-nav" aria-label="展开导航菜单">
+        <span></span>
+        <span></span>
+      </button>
+      <nav class="nav-links" id="primary-nav" aria-label="主导航">
         <a href="index.html#skills">技能</a>
         <a href="index.html#experience">经历</a>
         <a href="index.html#projects">项目</a>
         <a href="lab.html" aria-current="page">札记</a>
         <button class="contact-toggle" type="button" aria-expanded="false" aria-controls="contact-popover">联系</button>
       </nav>
-      <button class="a11y-toggle" type="button" aria-expanded="false" aria-controls="a11y-panel">辅助</button>
       <div class="contact-popover" id="contact-popover" data-glass hidden>
         <a class="mail-card" href="mailto:jueslibrary@gamil.com">
           <span class="mail-logo" aria-hidden="true">
@@ -49,15 +52,12 @@
           </span>
         </a>
       </div>
-      <div class="a11y-panel" id="a11y-panel" data-glass hidden>
-        <p class="a11y-title">辅助浏览</p>
-        <button class="a11y-option" type="button" data-a11y-toggle="largeText" aria-pressed="false">大字号</button>
-        <button class="a11y-option" type="button" data-a11y-toggle="highContrast" aria-pressed="false">高对比</button>
-        <button class="a11y-option" type="button" data-a11y-toggle="reducedMotion" aria-pressed="false">减少动画</button>
-      </div>
     </header>
 
     <main class="lab-main" id="main-content" tabindex="-1">
+      <p class="sr-only">
+        技术札记页面支持键盘导航和系统级辅助偏好。页面不依赖声音表达信息，动画仅作为视觉补充。
+      </p>
       <section class="lab-hero reveal">
         <p class="eyebrow">Lab Notes</p>
         <h1>把零散经验，整理成可以复用的小系统。</h1>
@@ -115,11 +115,30 @@
     <footer class="site-footer">
       <div class="footer-powered">
         <span>Power by</span>
-        <a class="footer-brand" href="https://www.cloudflare.com" target="_blank" rel="noreferrer">Cloudflare</a>
+        <a class="footer-brand" href="https://www.cloudflare.com" target="_blank" rel="noreferrer">
+          <svg viewBox="0 0 48 48" aria-hidden="true">
+            <path fill="#f38020"
+              d="M31.4 21.4c-.4 0-.8 0-1.2.1a10.4 10.4 0 0 0-19.8 2.9 7.1 7.1 0 0 0-6.3 7.1h31.6a5.1 5.1 0 0 0-4.3-10.1Z" />
+            <path fill="#faae40" d="M36.3 31.5h5.4a4.2 4.2 0 0 0 .4-8.4 8 8 0 0 0-15.5-2.7 5.2 5.2 0 0 1 9.7 3.6Z" />
+          </svg>
+          <span>Cloudflare</span>
+        </a>
         <span>&amp;</span>
-        <a class="footer-brand" href="https://openai.com" target="_blank" rel="noreferrer">OpenAI</a>
+        <a class="footer-brand" href="https://openai.com" target="_blank" rel="noreferrer" aria-label="OpenAI 官网">
+          <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+            <path fill="currentColor"
+              d="M21.46 10.06a5.82 5.82 0 0 0-.5-4.43 5.91 5.91 0 0 0-6.39-2.8A5.9 5.9 0 0 0 10.5 1 5.83 5.83 0 0 0 5.1 4.6a5.9 5.9 0 0 0-3.9 2.77 5.82 5.82 0 0 0 .72 6.92 5.82 5.82 0 0 0 .5 4.43 5.91 5.91 0 0 0 6.39 2.8A5.9 5.9 0 0 0 12.88 23a5.83 5.83 0 0 0 5.4-3.6 5.9 5.9 0 0 0 3.9-2.77 5.82 5.82 0 0 0-.72-6.57ZM12.88 21.5a4.36 4.36 0 0 1-2.8-1l.14-.08 4.65-2.69a.76.76 0 0 0 .38-.65v-6.56l1.97 1.14c.07.04.11.11.11.19v5.43a4.38 4.38 0 0 1-4.45 4.22ZM3.72 17.96a4.33 4.33 0 0 1-.52-2.92l.14.08 4.65 2.69a.76.76 0 0 0 .76 0l5.68-3.28v2.28c0 .08-.04.15-.11.19l-4.7 2.71a4.4 4.4 0 0 1-5.9-1.75ZM2.5 8.12a4.38 4.38 0 0 1 2.28-1.93v5.56c0 .27.14.52.38.66l5.68 3.28-1.97 1.14a.22.22 0 0 1-.22 0l-4.7-2.71A4.35 4.35 0 0 1 2.5 8.12Zm16.34 3.47-5.68-3.28 1.97-1.14a.22.22 0 0 1 .22 0l4.7 2.71a4.36 4.36 0 0 1-.84 7.99v-5.62a.76.76 0 0 0-.37-.66Zm1.95-2.63-.14-.08L16 6.19a.76.76 0 0 0-.76 0L9.56 9.47V7.19c0-.08.04-.15.11-.19l4.7-2.71a4.4 4.4 0 0 1 6.42 4.67ZM8.75 13.48l-1.97-1.14a.22.22 0 0 1-.11-.19V6.72a4.37 4.37 0 0 1 7.25-3.3l-.14.08L9.13 6.19a.76.76 0 0 0-.38.65v6.64Zm.8-2.16L12 9.9l2.45 1.42v2.84L12 15.58l-2.45-1.42v-2.84Z" />
+          </svg>
+          <span>OpenAI</span>
+        </a>
         <span>&amp;</span>
-        <a class="footer-brand" href="https://github.com/EEEEdward-0" target="_blank" rel="noreferrer">GitHub</a>
+        <a class="footer-brand" href="https://github.com/EEEEdward-0" target="_blank" rel="noreferrer" aria-label="GitHub 主页">
+          <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+            <path fill="currentColor"
+              d="M12 .5a12 12 0 0 0-3.79 23.39c.6.11.82-.26.82-.58v-2.03c-3.34.73-4.04-1.42-4.04-1.42-.55-1.39-1.34-1.76-1.34-1.76-1.09-.75.08-.73.08-.73 1.2.08 1.84 1.24 1.84 1.24 1.07 1.83 2.8 1.3 3.49.99.11-.77.42-1.3.76-1.6-2.67-.3-5.47-1.33-5.47-5.93 0-1.31.47-2.38 1.24-3.22-.12-.3-.54-1.52.12-3.18 0 0 1.01-.32 3.3 1.23A11.4 11.4 0 0 1 12 5.99c1.02 0 2.04.14 3 .41 2.29-1.55 3.3-1.23 3.3-1.23.66 1.66.24 2.88.12 3.18.77.84 1.23 1.91 1.23 3.22 0 4.61-2.81 5.62-5.48 5.92.43.37.81 1.1.81 2.22v3.3c0 .32.22.7.82.58A12 12 0 0 0 12 .5Z" />
+          </svg>
+          <span>GitHub</span>
+        </a>
       </div>
       <div class="footer-credit">Design by Edward</div>
     </footer>

@@ -46,6 +46,8 @@ const projectCards = document.querySelectorAll(".project-card[data-project]");
 const infraVisual = document.querySelector(".visual-infra");
 const contactToggle = document.querySelector(".contact-toggle");
 const contactPopover = document.querySelector("#contact-popover");
+const menuToggle = document.querySelector(".menu-toggle");
+const navLinks = document.querySelector(".nav-links");
 
 const selectProject = (projectId) => {
   projectCards.forEach((card) => {
@@ -148,6 +150,47 @@ if (contactToggle && contactPopover) {
   });
 }
 
+if (menuToggle && navLinks) {
+  const compactNav = window.matchMedia("(max-width: 960px)");
+
+  const setMenuOpen = (isOpen) => {
+    document.querySelector(".topbar")?.classList.toggle("is-menu-open", isOpen);
+    menuToggle.setAttribute("aria-expanded", String(isOpen));
+    menuToggle.setAttribute("aria-label", isOpen ? "收起导航菜单" : "展开导航菜单");
+    navLinks.toggleAttribute("inert", compactNav.matches && !isOpen);
+    navLinks.setAttribute("aria-hidden", String(compactNav.matches && !isOpen));
+  };
+
+  menuToggle.addEventListener("click", (event) => {
+    event.stopPropagation();
+    setMenuOpen(menuToggle.getAttribute("aria-expanded") !== "true");
+  });
+
+  navLinks.addEventListener("click", (event) => {
+    if (event.target.closest("a")) setMenuOpen(false);
+  });
+
+  document.addEventListener("click", (event) => {
+    if (!event.target.closest(".topbar")) setMenuOpen(false);
+  });
+
+  document.addEventListener("keydown", (event) => {
+    if (event.key === "Escape") setMenuOpen(false);
+  });
+
+  const syncCompactNav = () => {
+    const isOpen = menuToggle.getAttribute("aria-expanded") === "true";
+    setMenuOpen(compactNav.matches ? isOpen : false);
+    if (!compactNav.matches) {
+      navLinks.removeAttribute("inert");
+      navLinks.removeAttribute("aria-hidden");
+    }
+  };
+
+  compactNav.addEventListener("change", syncCompactNav);
+  syncCompactNav();
+}
+
 if (infraVisual) {
   const serverDots = [...infraVisual.querySelectorAll("b")];
   let infraTimers = [];
@@ -214,63 +257,11 @@ if (infraVisual) {
 }
 
 const root = document.documentElement;
-const a11yToggle = document.querySelector(".a11y-toggle");
-const a11yPanel = document.querySelector("#a11y-panel");
-const a11yOptions = document.querySelectorAll("[data-a11y-toggle]");
-const a11yClasses = {
-  largeText: "a11y-large-text",
-  highContrast: "a11y-high-contrast",
-  reducedMotion: "a11y-reduce-motion",
-};
-let storedA11y = {};
-
-try {
-  storedA11y = JSON.parse(localStorage.getItem("edward-a11y") || "{}");
-} catch {
-  storedA11y = {};
-}
-
-a11yOptions.forEach((option) => {
-  const key = option.dataset.a11yToggle;
-  const className = a11yClasses[key];
-  if (!className) return;
-
-  const active = Boolean(storedA11y[key]);
-  root.classList.toggle(className, active);
-  option.setAttribute("aria-pressed", String(active));
-
-  option.addEventListener("click", () => {
-    const next = !root.classList.contains(className);
-    root.classList.toggle(className, next);
-    option.setAttribute("aria-pressed", String(next));
-    storedA11y[key] = next;
-    localStorage.setItem("edward-a11y", JSON.stringify(storedA11y));
-  });
-});
-
-if (a11yToggle && a11yPanel) {
-  const setA11yOpen = (open) => {
-    a11yToggle.setAttribute("aria-expanded", String(open));
-    a11yPanel.hidden = !open;
-  };
-
-  a11yToggle.addEventListener("click", (event) => {
-    event.stopPropagation();
-    setA11yOpen(a11yToggle.getAttribute("aria-expanded") !== "true");
-  });
-
-  a11yPanel.addEventListener("click", (event) => event.stopPropagation());
-  document.addEventListener("click", () => setA11yOpen(false));
-  document.addEventListener("keydown", (event) => {
-    if (event.key === "Escape") setA11yOpen(false);
-  });
-}
-
 const projectIcons = document.querySelectorAll(".project-icon");
 const prefersReducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)");
 
 const playProjectIcon = (icon) => {
-  if (prefersReducedMotion.matches || root.classList.contains("a11y-reduce-motion")) return;
+  if (prefersReducedMotion.matches) return;
   icon.classList.remove("is-animating");
   void icon.offsetWidth;
   icon.classList.add("is-animating");

@@ -19,7 +19,7 @@
 - JavaScript
 - Responsive layout
 - Apple-inspired visual style
-- Accessibility controls: skip link, ARIA states, high contrast, large text, reduced motion
+- Accessibility: skip link, ARIA states, keyboard navigation, system high contrast / forced colors, reduced motion, reduced transparency, larger touch targets
 
 ## 部署
 

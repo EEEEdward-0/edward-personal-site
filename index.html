@@ -10,14 +10,6 @@
   <link rel="preload" href="assets/liquid-glass-hero.png" as="image" />
   <link rel="stylesheet" href="styles.css" />
 </head>
-<!-- SVG 滤镜定义 (必须保留在页面顶部) -->
-<svg aria-hidden="true" width="0" height="0">
-  <filter id="liquid-glass-distortion">
-    <feTurbulence baseFrequency="0.012 0.018" numOctaves="2" seed="12" result="glassNoise" />
-    <feDisplacementMap in="SourceGraphic" in2="glassNoise" scale="14" xChannelSelector="R" yChannelSelector="G" />
-  </filter>
-</svg>
-
 <body>
   <a class="skip-link" href="#main-content">跳到主要内容</a>
   <svg class="liquid-glass-filter" aria-hidden="true" focusable="false" width="0" height="0">
@@ -32,14 +24,17 @@
         <span class="brand-mark">EZ</span>
         <span>Edward Zheng</span>
       </a>
-      <nav class="nav-links" aria-label="主导航">
+      <button class="menu-toggle" type="button" aria-expanded="false" aria-controls="primary-nav" aria-label="展开导航菜单">
+        <span></span>
+        <span></span>
+      </button>
+      <nav class="nav-links" id="primary-nav" aria-label="主导航">
         <a href="#skills">技能</a>
         <a href="#experience">经历</a>
         <a href="#projects">项目</a>
         <a href="lab.html">札记</a>
         <button class="contact-toggle" type="button" aria-expanded="false" aria-controls="contact-popover">联系</button>
       </nav>
-      <button class="a11y-toggle" type="button" aria-expanded="false" aria-controls="a11y-panel">辅助</button>
       <div class="contact-popover" id="contact-popover" data-glass hidden>
         <a class="mail-card" href="mailto:jueslibrary@gamil.com">
           <span class="mail-logo" aria-hidden="true">
@@ -56,16 +51,13 @@
           </span>
         </a>
       </div>
-      <div class="a11y-panel" id="a11y-panel" data-glass hidden>
-        <p class="a11y-title">辅助浏览</p>
-        <button class="a11y-option" type="button" data-a11y-toggle="largeText" aria-pressed="false">大字号</button>
-        <button class="a11y-option" type="button" data-a11y-toggle="highContrast" aria-pressed="false">高对比</button>
-        <button class="a11y-option" type="button" data-a11y-toggle="reducedMotion" aria-pressed="false">减少动画</button>
-      </div>
     </header>
 
     <main id="main-content" tabindex="-1">
       <section class="hero section">
+        <p class="sr-only">
+          本站支持键盘导航、跳过导航链接、系统减少动态、高对比、强制颜色和减少透明度偏好；项目动画仅作为视觉补充，不影响内容理解。
+        </p>
         <div class="hero-media" aria-hidden="true">
           <img src="assets/liquid-glass-hero.png" alt="" />
         </div>
@@ -161,10 +153,10 @@
         <div class="work-browser reveal delay-1">
           <div class="work-accordion" aria-label="工作经历列表">
             <article class="work-group" aria-expanded="false">
-              <button class="work-group-trigger" type="button" aria-expanded="false">
+              <button class="work-group-trigger" type="button" aria-expanded="false" aria-controls="internship-work">
                 <span class="work-group-title">实习经历</span>
               </button>
-              <div class="work-group-content">
+              <div class="work-group-content" id="internship-work">
                 <article class="work-detail">
                   <h3>亚信科技（中国）有限公司｜网络安全技术支持工程师</h3>
                   <span class="time">2021.03 - 2021.07</span>
@@ -182,10 +174,10 @@
             </article>
 
             <article class="work-group" aria-expanded="false">
-              <button class="work-group-trigger" type="button" aria-expanded="false">
+              <button class="work-group-trigger" type="button" aria-expanded="false" aria-controls="fulltime-work">
                 <span class="work-group-title">正式工作</span>
               </button>
-              <div class="work-group-content">
+              <div class="work-group-content" id="fulltime-work">
                 <article class="work-detail">
                   <h3>星展银行（中国）有限公司｜数据库运维工程师 DBA</h3>
                   <span class="time">2021.11 - 2022.10</span>
