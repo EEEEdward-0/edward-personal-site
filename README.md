@@ -20,6 +20,7 @@
 - Responsive layout
 - Apple-inspired visual style
 - Accessibility: skip link, ARIA states, keyboard navigation, system high contrast / forced colors, reduced motion, reduced transparency, larger touch targets
+- Cloudflare Pages Function: proxies GitHub language statistics with an optional `GITHUB_TOKEN` / `GH_TOKEN` / `GITHUB_API_TOKEN` environment variable
 
 ## 部署
 

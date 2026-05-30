@@ -118,7 +118,11 @@ projectCards.forEach((card) => {
 });
 
 if (contactToggle && contactPopover) {
+  const contactTransitionMs = 220;
+  let contactCloseTimer;
+
   setContactOpen = (isOpen) => {
+    window.clearTimeout(contactCloseTimer);
     topbar?.classList.toggle("is-contact-open", isOpen);
     contactToggle.setAttribute("aria-expanded", String(isOpen));
     if (isOpen) {
@@ -128,11 +132,11 @@ if (contactToggle && contactPopover) {
       });
     } else {
       contactPopover.classList.remove("is-open");
-      window.setTimeout(() => {
+      contactCloseTimer = window.setTimeout(() => {
         if (!contactPopover.classList.contains("is-open")) {
           contactPopover.hidden = true;
         }
-      }, 220);
+      }, contactTransitionMs);
     }
   };
 
@@ -155,6 +159,15 @@ if (contactToggle && contactPopover) {
 
 if (menuToggle && navLinks) {
   const compactNav = window.matchMedia("(max-width: 960px)");
+  const closeMenu = () => {
+    if (contactToggle?.getAttribute("aria-expanded") === "true") {
+      setContactOpen(false);
+      window.setTimeout(() => setMenuOpen(false), 220);
+      return;
+    }
+
+    setMenuOpen(false);
+  };
 
   const setMenuOpen = (isOpen) => {
     topbar?.classList.toggle("is-menu-open", isOpen);
@@ -169,7 +182,12 @@ if (menuToggle && navLinks) {
 
   menuToggle.addEventListener("click", (event) => {
     event.stopPropagation();
-    setMenuOpen(menuToggle.getAttribute("aria-expanded") !== "true");
+    if (menuToggle.getAttribute("aria-expanded") === "true") {
+      closeMenu();
+      return;
+    }
+
+    setMenuOpen(true);
   });
 
   navLinks.addEventListener("click", (event) => {
@@ -181,15 +199,15 @@ if (menuToggle && navLinks) {
       targetUrl.origin === window.location.origin &&
       targetUrl.pathname === window.location.pathname;
 
-    if (sameDocument) setMenuOpen(false);
+    if (sameDocument) closeMenu();
   });
 
   document.addEventListener("click", (event) => {
-    if (!event.target.closest(".topbar")) setMenuOpen(false);
+    if (!event.target.closest(".topbar")) closeMenu();
   });
 
   document.addEventListener("keydown", (event) => {
-    if (event.key === "Escape") setMenuOpen(false);
+    if (event.key === "Escape") closeMenu();
   });
 
   const syncCompactNav = () => {
@@ -308,6 +326,9 @@ if (projectIcons.length > 0) {
 
 const languageChart = document.querySelector("#language-chart");
 const languageStatus = document.querySelector("#language-panel-status");
+const languageInfoToggle = document.querySelector(".language-info-toggle");
+const languageInfoPopover = document.querySelector("#language-info-popover");
+const languageInfoText = document.querySelector("#language-info-text");
 
 if (languageChart) {
   const githubUser = "EEEEdward-0";
@@ -368,10 +389,56 @@ if (languageChart) {
     if (languageStatus) {
       languageStatus.textContent = sourceText;
     }
+    if (languageInfoText) {
+      languageInfoText.textContent = sourceText;
+    }
   };
+
+  const setLanguageInfoOpen = (isOpen) => {
+    if (!languageInfoToggle || !languageInfoPopover) return;
+    languageInfoToggle.setAttribute("aria-expanded", String(isOpen));
+    languageInfoToggle.classList.toggle("is-open", isOpen);
+    if (isOpen) {
+      languageInfoPopover.hidden = false;
+      window.requestAnimationFrame(() => languageInfoPopover.classList.add("is-open"));
+    } else {
+      languageInfoPopover.classList.remove("is-open");
+      window.setTimeout(() => {
+        if (!languageInfoPopover.classList.contains("is-open")) {
+          languageInfoPopover.hidden = true;
+        }
+      }, 180);
+    }
+  };
+
+  if (languageInfoToggle && languageInfoPopover) {
+    languageInfoToggle.addEventListener("click", (event) => {
+      event.stopPropagation();
+      setLanguageInfoOpen(languageInfoToggle.getAttribute("aria-expanded") !== "true");
+    });
+
+    languageInfoPopover.addEventListener("click", (event) => event.stopPropagation());
+
+    document.addEventListener("click", () => setLanguageInfoOpen(false));
+    document.addEventListener("keydown", (event) => {
+      if (event.key === "Escape") setLanguageInfoOpen(false);
+    });
+  }
 
   const loadGitHubLanguages = async () => {
     try {
+      const pagesFunctionResponse = await fetch("/api/github-languages", {
+        headers: { Accept: "application/json" },
+      });
+
+      if (pagesFunctionResponse.ok) {
+        const payload = await pagesFunctionResponse.json();
+        if (payload?.totals && Object.keys(payload.totals).length > 0) {
+          renderLanguages(payload.totals, payload.sourceText || "基于 GitHub 公开仓库语言字节数统计。");
+          return;
+        }
+      }
+
       const reposResponse = await fetch(`https://api.github.com/users/${githubUser}/repos?per_page=100&sort=updated`);
       if (!reposResponse.ok) throw new Error("GitHub repositories unavailable");
 
