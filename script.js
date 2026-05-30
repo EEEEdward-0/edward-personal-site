@@ -469,3 +469,292 @@ if (languageChart) {
   renderLanguages(fallbackLanguages, "正在读取 GitHub 公开仓库语言统计。");
   loadGitHubLanguages();
 }
+
+const agentDashboard = document.querySelector("[data-agent-dashboard]");
+
+if (agentDashboard) {
+  const agentTrigger = agentDashboard.querySelector(".agent-dashboard-trigger");
+  const agentBody = agentDashboard.querySelector("#agent-dashboard-body");
+  const agentTitle = agentDashboard.querySelector("#agent-dashboard-title");
+  const agentSummary = agentDashboard.querySelector("[data-agent-summary]");
+  const agentStatus = agentDashboard.querySelector("[data-agent-status]");
+  const agentSource = agentDashboard.querySelector("[data-agent-source]");
+  const agentState = agentDashboard.querySelector("[data-agent-state]");
+  const agentCpu = agentDashboard.querySelector("[data-agent-cpu]");
+  const agentCpuNote = agentDashboard.querySelector("[data-agent-cpu-note]");
+  const agentMemory = agentDashboard.querySelector("[data-agent-memory]");
+  const agentMemoryNote = agentDashboard.querySelector("[data-agent-memory-note]");
+  const agentProcessCount = agentDashboard.querySelector("[data-agent-process-count]");
+  const agentActiveCount = agentDashboard.querySelector("[data-agent-active-count]");
+  const agentRefresh = agentDashboard.querySelector("[data-agent-refresh]");
+  const agentCapability = agentDashboard.querySelector("[data-agent-capability]");
+  const agentModel = agentDashboard.querySelector("[data-agent-model]");
+  const agentSparklines = agentDashboard.querySelectorAll("[data-agent-sparkline]");
+  const agentChartArea = agentDashboard.querySelector("[data-agent-chart-area]");
+  const agentChartLines = agentDashboard.querySelectorAll("[data-agent-chart-line]");
+  let agentStatusTimer = null;
+  const agentHistory = [];
+  const maxAgentHistory = 60;
+
+  const getSeriesPath = (values, width = 120, height = 36, maxValue) => {
+    if (values.length === 0) return "";
+    const safeMax = Math.max(maxValue || Math.max(...values), 1);
+    return values
+      .map((value, index) => {
+        const x = values.length === 1 ? width : (index / (values.length - 1)) * width;
+        const y = height - (Math.max(0, value) / safeMax) * (height - 4) - 2;
+        return `${index === 0 ? "M" : "L"} ${x.toFixed(2)} ${y.toFixed(2)}`;
+      })
+      .join(" ");
+  };
+
+  const getAreaPath = (values, width = 640, height = 220, maxValue) => {
+    const line = getSeriesPath(values, width, height, maxValue);
+    if (!line) return "";
+    return `${line} L ${width} ${height} L 0 ${height} Z`;
+  };
+
+  const updateAgentCharts = () => {
+    const cpuValues = agentHistory.map((entry) => entry.cpuPercent || 0);
+    const memoryValues = agentHistory.map((entry) => entry.memoryMb || 0);
+    const processValues = agentHistory.map((entry) => entry.processCount || 0);
+    const activeValues = agentHistory.map((entry) => entry.activeProcessCount || 0);
+    const cpuMax = Math.max(100, ...cpuValues);
+    const memoryMax = Math.max(1024, ...memoryValues);
+    const processMax = Math.max(10, ...processValues);
+    const activeMax = Math.max(4, ...activeValues);
+
+    agentSparklines.forEach((path) => {
+      const type = path.dataset.agentSparkline;
+      if (type === "cpu") path.setAttribute("d", getSeriesPath(cpuValues, 120, 36, cpuMax));
+      if (type === "memory") path.setAttribute("d", getSeriesPath(memoryValues, 120, 36, memoryMax));
+      if (type === "process") path.setAttribute("d", getSeriesPath(processValues, 120, 36, processMax));
+      if (type === "active") path.setAttribute("d", getSeriesPath(activeValues, 120, 36, activeMax));
+    });
+
+    agentChartLines.forEach((path) => {
+      const type = path.dataset.agentChartLine;
+      if (type === "cpu") path.setAttribute("d", getSeriesPath(cpuValues, 640, 220, cpuMax));
+      if (type === "memory") path.setAttribute("d", getSeriesPath(memoryValues, 640, 220, memoryMax));
+    });
+
+    if (agentChartArea) {
+      agentChartArea.setAttribute("d", getAreaPath(cpuValues, 640, 220, cpuMax));
+    }
+  };
+
+  const pushAgentSample = (payload) => {
+    agentHistory.push({
+      activeProcessCount: payload.activeProcessCount || 0,
+      cpuPercent: payload.cpuPercent || 0,
+      memoryMb: payload.memoryMb || 0,
+      processCount: payload.processCount || 0,
+      checkedAt: payload.checkedAt || new Date().toISOString(),
+    });
+
+    if (agentHistory.length > maxAgentHistory) {
+      agentHistory.splice(0, agentHistory.length - maxAgentHistory);
+    }
+
+    updateAgentCharts();
+  };
+
+  const setAgentBodyOpen = (isOpen) => {
+    if (!agentTrigger || !agentBody || agentTrigger.disabled) return;
+    agentTrigger.setAttribute("aria-expanded", String(isOpen));
+    agentDashboard.classList.toggle("is-open", isOpen);
+    agentBody.hidden = !isOpen;
+  };
+
+  const setAgentUnavailable = (summary = "未检测到可读取的本机 Agent 状态接口。") => {
+    agentDashboard.classList.add("is-unavailable");
+    agentDashboard.classList.remove("is-ready", "is-runtime", "is-running", "is-idle");
+    if (agentTitle) agentTitle.textContent = "当前未找到支持的 Agent 模型";
+    if (agentSummary) agentSummary.textContent = summary;
+    if (agentStatus) agentStatus.textContent = "Unavailable";
+    if (agentSource) agentSource.textContent = "等待检测";
+    if (agentState) agentState.textContent = "未连接";
+    if (agentCpu) agentCpu.textContent = "--";
+    if (agentCpuNote) agentCpuNote.textContent = "等待采样";
+    if (agentMemory) agentMemory.textContent = "--";
+    if (agentMemoryNote) agentMemoryNote.textContent = "等待采样";
+    if (agentProcessCount) agentProcessCount.textContent = "--";
+    if (agentActiveCount) agentActiveCount.textContent = "活动进程 --";
+    if (agentRefresh) agentRefresh.textContent = "刷新间隔 --";
+    if (agentCapability) agentCapability.textContent = "暂无";
+    if (agentModel) agentModel.textContent = "无法判断";
+    if (agentTrigger) {
+      agentTrigger.disabled = true;
+      agentTrigger.setAttribute("aria-expanded", "false");
+    }
+    if (agentBody) agentBody.hidden = true;
+  };
+
+  const setAgentReady = (payload) => {
+    const isBrowserRuntime = payload.kind === "browser-runtime";
+    const activityState = payload.activityState || (isBrowserRuntime ? "idle" : "running");
+
+    agentDashboard.classList.remove("is-unavailable");
+    agentDashboard.classList.add("is-ready");
+    agentDashboard.classList.toggle("is-runtime", isBrowserRuntime);
+    agentDashboard.classList.toggle("is-running", activityState === "running");
+    agentDashboard.classList.toggle("is-idle", activityState === "idle");
+    if (agentTitle) {
+      agentTitle.textContent = payload.title || (isBrowserRuntime ? "浏览器端 LLM Runtime 可用" : "Agent 仪表盘");
+    }
+    if (agentSummary) {
+      agentSummary.textContent = payload.summary || "检测到可用的 Agent 或浏览器 AI 能力。";
+    }
+    if (agentStatus) agentStatus.textContent = payload.status || "Available";
+    if (agentSource) agentSource.textContent = payload.source || "浏览器能力";
+    if (agentState) agentState.textContent = payload.state || "可用";
+    if (agentCpu) agentCpu.textContent = typeof payload.cpuPercent === "number" ? `${payload.cpuPercent.toFixed(1)}%` : "--";
+    if (agentCpuNote) {
+      agentCpuNote.textContent =
+        typeof payload.cpuCoreCount === "number"
+          ? `按 ${payload.cpuCoreCount} 核归一化`
+          : typeof payload.activeProcessCount === "number"
+            ? `${payload.activeProcessCount} 个进程有活动`
+            : "运行环境待采样";
+    }
+    if (agentMemory) agentMemory.textContent = typeof payload.memoryMb === "number" ? `${payload.memoryMb.toFixed(1)} MB` : "--";
+    if (agentMemoryNote) {
+      agentMemoryNote.textContent = typeof payload.memoryMb === "number" ? "RSS 合计" : "未连接本机桥";
+    }
+    if (agentProcessCount) {
+      agentProcessCount.textContent = typeof payload.processCount === "number" ? payload.processCount.toLocaleString("zh-CN") : "--";
+    }
+    if (agentActiveCount) {
+      agentActiveCount.textContent =
+        typeof payload.activeProcessCount === "number" ? `活动进程 ${payload.activeProcessCount}` : "活动进程 --";
+    }
+    if (agentRefresh) {
+      agentRefresh.textContent = payload.refreshMs ? `刷新间隔 ${(payload.refreshMs / 1000).toFixed(0)}s` : "刷新间隔 --";
+    }
+    if (agentCapability) agentCapability.textContent = payload.capability || "基础状态读取";
+    if (agentModel) agentModel.textContent = payload.modelProvider || "未暴露具体模型";
+    if (agentTrigger) agentTrigger.disabled = false;
+    pushAgentSample(payload);
+  };
+
+  const fetchJsonWithTimeout = async (url, timeout = 1200) => {
+    const controller = new AbortController();
+    const timeoutId = window.setTimeout(() => controller.abort(), timeout);
+
+    try {
+      const response = await fetch(url, {
+        cache: "no-store",
+        headers: { Accept: "application/json" },
+        signal: controller.signal,
+      });
+
+      if (!response.ok) return null;
+      return response.json();
+    } finally {
+      window.clearTimeout(timeoutId);
+    }
+  };
+
+  const getAgentStatusEndpoints = () => {
+    const endpoints = [];
+    const isLocalPage =
+      window.location.protocol === "file:" ||
+      ["localhost", "127.0.0.1", ""].includes(window.location.hostname);
+
+    if (isLocalPage) {
+      endpoints.push("http://127.0.0.1:8788/agent-status");
+      endpoints.push("http://localhost:8788/agent-status");
+    }
+
+    if (!isLocalPage && (window.location.protocol === "http:" || window.location.protocol === "https:")) {
+      endpoints.push(`${window.location.origin}/api/agent-status`);
+    }
+
+    return [...new Set(endpoints)];
+  };
+
+  const detectBrowserLlmRuntime = async () => {
+    if (!("gpu" in navigator)) return null;
+
+    let adapter = null;
+    try {
+      adapter = await navigator.gpu.requestAdapter();
+    } catch (error) {
+      adapter = null;
+    }
+
+    if (!adapter) return null;
+
+    let builtInAiAvailability = null;
+    const languageModel = globalThis.LanguageModel || globalThis.ai?.languageModel;
+    if (languageModel?.availability) {
+      try {
+        builtInAiAvailability = await languageModel.availability();
+      } catch (error) {
+        builtInAiAvailability = null;
+      }
+    }
+    const hasUsableBuiltInAi =
+      builtInAiAvailability && !["unavailable", "no"].includes(String(builtInAiAvailability).toLowerCase());
+
+    return {
+      available: true,
+      kind: "browser-runtime",
+      title: "浏览器端 LLM Runtime 可用",
+      source: "WebGPU / MediaPipe LLM Inference",
+      state: "WebGPU 已就绪",
+      status: "Runtime",
+      activityState: "idle",
+      refreshMs: 5000,
+      capability: "端侧 LLM 推理环境",
+      modelProvider: hasUsableBuiltInAi
+        ? `可能是 Google Gemini Nano（Chrome Built-in AI: ${builtInAiAvailability}）`
+        : builtInAiAvailability
+          ? `无法确认；Chrome Built-in AI 接口存在，但当前状态为 ${builtInAiAvailability}`
+        : "无法判断；MediaPipe/WebGPU 是运行环境，具体厂商取决于加载的模型文件",
+      summary: hasUsableBuiltInAi
+        ? "检测到当前浏览器可创建 WebGPU Adapter，且存在 Chrome Built-in AI 语言模型接口；该接口通常对应 Google Gemini Nano。"
+        : builtInAiAvailability
+          ? "检测到当前浏览器可创建 WebGPU Adapter，且存在 Chrome Built-in AI 语言模型接口；但当前内置模型不可用。"
+        : "检测到当前浏览器可创建 WebGPU Adapter，可接入 MediaPipe LLM Inference Web 运行时；但尚未加载具体模型文件，无法判断模型厂商。",
+    };
+  };
+
+  const loadAgentStatus = async () => {
+    let nextRefreshMs = 15000;
+
+    for (const endpoint of getAgentStatusEndpoints()) {
+      try {
+        const payload = await fetchJsonWithTimeout(endpoint);
+        if (payload?.available) {
+          setAgentReady(payload);
+          nextRefreshMs = payload.refreshMs || (payload.kind === "agent-bridge" ? 1000 : 5000);
+          return nextRefreshMs;
+        }
+      } catch (error) {
+        // Agent status bridge is optional and may be unavailable on static hosting.
+      }
+    }
+
+    const browserRuntime = await detectBrowserLlmRuntime();
+    if (browserRuntime) {
+      setAgentReady(browserRuntime);
+      return browserRuntime.refreshMs;
+    }
+
+    setAgentUnavailable("未检测到可读取的本机 Agent 状态接口；当前浏览器也不满足 WebGPU 端侧 LLM 推理条件。");
+    return nextRefreshMs;
+  };
+
+  const scheduleAgentStatusLoad = async () => {
+    window.clearTimeout(agentStatusTimer);
+    const nextRefreshMs = await loadAgentStatus();
+    agentStatusTimer = window.setTimeout(scheduleAgentStatusLoad, nextRefreshMs || 15000);
+  };
+
+  agentTrigger?.addEventListener("click", () => {
+    setAgentBodyOpen(agentTrigger.getAttribute("aria-expanded") !== "true");
+  });
+
+  scheduleAgentStatusLoad();
+}

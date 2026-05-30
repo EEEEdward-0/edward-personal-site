@@ -99,26 +99,113 @@
         <div class="language-chart" id="language-chart" role="list" aria-label="GitHub 不同编程语言代码量横向柱状图"></div>
       </section>
 
-      <section class="lab-note-list reveal" aria-labelledby="lab-process-title">
-        <h2 id="lab-process-title">我的实践顺序</h2>
-        <ol>
-          <li>
-            <span>Observe</span>
-            <p>先把现象、日志、失败路径和人为操作记录清楚，不急着重构。</p>
-          </li>
-          <li>
-            <span>Automate</span>
-            <p>把高频动作变成脚本、规则或小工具，保留人工复核点。</p>
-          </li>
-          <li>
-            <span>Verify</span>
-            <p>用可重复的数据、浏览器验证和边界场景确认结果，避免只看“看起来没问题”。</p>
-          </li>
-          <li>
-            <span>Document</span>
-            <p>把经验写成短说明，方便后续维护，也方便别人接手。</p>
-          </li>
-        </ol>
+      <section class="agent-dashboard reveal is-unavailable" aria-labelledby="agent-dashboard-title" data-agent-dashboard>
+        <div class="agent-dashboard-toolbar" aria-label="Agent 监控筛选">
+          <button class="agent-filter-button" type="button" disabled>
+            <span aria-hidden="true">▽</span>
+            <span>本机状态桥</span>
+          </button>
+          <span class="agent-range-pill">最近 60 秒 · 本机</span>
+        </div>
+        <button
+          class="agent-dashboard-trigger"
+          type="button"
+          aria-expanded="false"
+          aria-controls="agent-dashboard-body"
+          disabled
+        >
+          <span class="agent-dashboard-copy">
+            <span class="eyebrow">Agent Dashboard</span>
+            <span class="agent-dashboard-title" id="agent-dashboard-title">当前未找到支持的Agent模型</span>
+            <span class="agent-dashboard-summary" data-agent-summary>未检测到可读取的本机 Agent 状态接口。</span>
+          </span>
+          <span class="agent-dashboard-status" data-agent-status>Unavailable</span>
+        </button>
+        <div class="agent-dashboard-body" id="agent-dashboard-body" hidden>
+          <div class="agent-metric-grid">
+            <article class="agent-metric-card" data-agent-metric="cpu">
+              <header>
+                <span>CPU 利用率</span>
+                <span>···</span>
+              </header>
+              <strong data-agent-cpu>--</strong>
+              <small data-agent-cpu-note>等待采样</small>
+              <svg viewBox="0 0 120 36" preserveAspectRatio="none" aria-hidden="true">
+                <path data-agent-sparkline="cpu"></path>
+              </svg>
+            </article>
+            <article class="agent-metric-card" data-agent-metric="memory">
+              <header>
+                <span>内存占用</span>
+                <span>···</span>
+              </header>
+              <strong data-agent-memory>--</strong>
+              <small data-agent-memory-note>等待采样</small>
+              <svg viewBox="0 0 120 36" preserveAspectRatio="none" aria-hidden="true">
+                <path data-agent-sparkline="memory"></path>
+              </svg>
+            </article>
+            <article class="agent-metric-card" data-agent-metric="process">
+              <header>
+                <span>Codex 进程</span>
+                <span>···</span>
+              </header>
+              <strong data-agent-process-count>--</strong>
+              <small data-agent-active-count>活动进程 --</small>
+              <svg viewBox="0 0 120 36" preserveAspectRatio="none" aria-hidden="true">
+                <path data-agent-sparkline="process"></path>
+              </svg>
+            </article>
+            <article class="agent-metric-card" data-agent-metric="state">
+              <header>
+                <span>运行状态</span>
+                <span>···</span>
+              </header>
+              <strong data-agent-state>未连接</strong>
+              <small data-agent-refresh>刷新间隔 --</small>
+              <svg viewBox="0 0 120 36" preserveAspectRatio="none" aria-hidden="true">
+                <path data-agent-sparkline="active"></path>
+              </svg>
+            </article>
+          </div>
+
+          <article class="agent-chart-card">
+            <header>
+              <span>Agent resources over time</span>
+              <span data-agent-chart-range>最近 60 秒</span>
+            </header>
+            <div class="agent-chart-legend" aria-hidden="true">
+              <span><i></i> CPU</span>
+              <span><i></i> Memory</span>
+            </div>
+            <svg class="agent-resource-chart" viewBox="0 0 640 220" preserveAspectRatio="none" role="img" aria-label="Agent CPU 与内存占用趋势图">
+              <g class="agent-chart-grid">
+                <line x1="0" y1="44" x2="640" y2="44"></line>
+                <line x1="0" y1="88" x2="640" y2="88"></line>
+                <line x1="0" y1="132" x2="640" y2="132"></line>
+                <line x1="0" y1="176" x2="640" y2="176"></line>
+              </g>
+              <path class="agent-chart-area" data-agent-chart-area></path>
+              <path class="agent-chart-line agent-chart-line-cpu" data-agent-chart-line="cpu"></path>
+              <path class="agent-chart-line agent-chart-line-memory" data-agent-chart-line="memory"></path>
+            </svg>
+          </article>
+
+          <div class="agent-detail-grid">
+            <div>
+              <span>接口来源</span>
+              <strong data-agent-source>等待检测</strong>
+            </div>
+            <div>
+              <span>可用能力</span>
+              <strong data-agent-capability>暂无</strong>
+            </div>
+            <div>
+              <span>模型来源</span>
+              <strong data-agent-model>无法判断</strong>
+            </div>
+          </div>
+        </div>
       </section>
     </main>
 
