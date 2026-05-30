@@ -1642,6 +1642,7 @@ h1 span {
   width: 100%;
   max-width: none;
   padding: 12px 12px 132px;
+  text-align: center;
 }
 
 .contact-panel {
@@ -1672,13 +1673,77 @@ h1 span {
   transform: rotate(12deg);
 }
 
+.resume-download-card {
+  display: inline-flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  margin-top: 20px;
+  color: rgba(29, 29, 31, 0.86);
+  text-decoration: none;
+  font-size: 0.92rem;
+  font-weight: 700;
+  line-height: 1.1;
+}
+
+.resume-download-icon {
+  display: grid;
+  width: 72px;
+  height: 72px;
+  place-items: center;
+  border-radius: 18px;
+  color: #3a3a3c;
+  background: rgba(255, 255, 255, 0.9);
+  box-shadow:
+    inset 0 0 0 1px rgba(255, 255, 255, 0.9),
+    0 14px 38px rgba(0, 0, 0, 0.08);
+  transition:
+    color 180ms ease,
+    transform 180ms ease,
+    box-shadow 180ms ease,
+    background 180ms ease;
+}
+
+.resume-download-icon svg {
+  width: 34px;
+  height: 34px;
+}
+
+.resume-download-icon .resume-cloud,
+.resume-download-icon .resume-arrow {
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 2.4;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.resume-download-card:hover .resume-download-icon,
+.resume-download-card:focus-visible .resume-download-icon {
+  color: var(--blue);
+  background: #ffffff;
+  transform: translateY(-3px);
+  box-shadow:
+    inset 0 0 0 1px rgba(255, 255, 255, 1),
+    0 18px 46px rgba(0, 113, 227, 0.16);
+}
+
+.resume-download-card:hover .resume-arrow,
+.resume-download-card:focus-visible .resume-arrow {
+  transform: translateY(2px);
+}
+
+.resume-download-icon .resume-arrow {
+  transition: transform 180ms ease;
+}
+
 .site-footer {
   display: grid;
   grid-template-columns: max-content 1fr max-content;
   align-items: center;
   column-gap: 16px;
   min-height: 56px;
-  padding: 10px max(20px, calc((100vw - var(--wide)) / 2));
+  padding: 10px 28px;
   color: #000000;
   background: #ffffff;
   border-top: 0;
@@ -3811,8 +3876,12 @@ main:focus {
     background: rgba(255, 255, 255, 0.92) !important;
   }
 
+  .topbar.is-menu-open.is-contact-open {
+    height: 178px;
+  }
+
   .topbar.is-contact-open {
-    overflow: visible;
+    overflow: hidden;
   }
 
   .topbar .brand {
@@ -3906,13 +3975,14 @@ main:focus {
   }
 
   .topbar .contact-popover {
-    position: fixed;
-    top: 94px;
-    right: max(18px, env(safe-area-inset-right));
-    width: min(320px, calc(100vw - 36px));
+    order: 4;
+    position: static;
+    width: min(360px, 100%);
+    margin: 8px 0 10px auto;
+    padding: 10px;
     z-index: 80;
     box-shadow:
-      0 22px 60px rgba(0, 0, 0, 0.16),
+      0 14px 38px rgba(0, 0, 0, 0.12),
       inset 0 0 0 1px rgba(255, 255, 255, 0.72);
   }
 }
