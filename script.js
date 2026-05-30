@@ -53,7 +53,7 @@ const contactPopover = document.querySelector("#contact-popover");
 const menuToggle = document.querySelector(".menu-toggle");
 const navLinks = document.querySelector(".nav-links");
 const topbar = document.querySelector(".topbar");
-let setContactOpen = () => {};
+let setContactOpen = () => { };
 
 const selectProject = (projectId) => {
   projectCards.forEach((card) => {
@@ -89,7 +89,7 @@ workGroups.forEach((item, index) => {
 
     workGroups.forEach((group) => {
       const groupTrigger = group.querySelector(".work-group-trigger");
-      
+
       if (group === item) {
         const newState = !isCurrentlyOpen;
         group.classList.toggle("is-open", newState);
@@ -360,12 +360,11 @@ if (languageChart) {
     return `${bytes} B`;
   };
 
-const renderLanguages = (languageTotals, sourceText) => {
-  const entries = Object.entries(languageTotals)
-    .filter(([, bytes]) => bytes > 0)
-    .sort((a, b) => b[1] - a[1])
-    .slice(0, 7);
-
+  const renderLanguages = (languageTotals, sourceText) => {
+    const entries = Object.entries(languageTotals)
+      .filter(([, bytes]) => bytes > 0)
+      .sort(([, bBytes], [, aBytes]) => bBytes - aBytes)
+      .slice(0, 7);
 
     const total = entries.reduce((sum, [, bytes]) => sum + bytes, 0) || 1;
 
@@ -547,9 +546,9 @@ if (agentDashboard) {
     agentDashboard.classList.toggle("is-open", isOpen);
     agentBody.hidden = !isOpen;
   };
-// ===================================================
-// Part 5-2: 监控面板就绪赋值、本地网桥幽灵探针与最终闭合
-// ===================================================
+  // ===================================================
+  // Part 5-2: 监控面板就绪赋值、本地网桥幽灵探针与最终闭合
+  // ===================================================
 
   const setAgentUnavailable = (summary = "未检测到可读取的本机 Agent 状态接口。") => {
     agentDashboard.classList.add("is-unavailable");
@@ -600,8 +599,8 @@ if (agentDashboard) {
         typeof payload.cpuCoreCount === "number"
           ? `按 ${payload.cpuCoreCount} 核归一化`
           : typeof payload.activeProcessCount === "number"
-          ? `${payload.activeProcessCount} 个进程有活动`
-          : "运行环境待采样";
+            ? `${payload.activeProcessCount} 个进程有活动`
+            : "运行环境待采样";
     }
     if (agentMemory) agentMemory.textContent = typeof payload.memoryMb === "number" ? `${payload.memoryMb.toFixed(1)} MB` : "--";
     if (agentMemoryNote) {
@@ -676,13 +675,13 @@ if (agentDashboard) {
       modelProvider: hasUsableBuiltInAi
         ? `可能是 Google Gemini Nano（Chrome Built-in AI: ${builtInAiAvailability}）`
         : builtInAiAvailability
-        ? `无法确认；Chrome Built-in AI 接口存在，但当前状态为 ${builtInAiAvailability}`
-        : "无法判断；MediaPipe/WebGPU 是运行环境，具体厂商取决于加载的模型文件",
+          ? `无法确认；Chrome Built-in AI 接口存在，但当前状态为 ${builtInAiAvailability}`
+          : "无法判断；MediaPipe/WebGPU 是运行环境，具体厂商取决于加载的模型文件",
       summary: hasUsableBuiltInAi
         ? "检测到当前浏览器可创建 WebGPU Adapter，且存在 Chrome Built-in AI 语言模型接口；该接口通常对应 Google Gemini Nano。"
         : builtInAiAvailability
-        ? "检测到当前浏览器可创建 WebGPU Adapter，且存在 Chrome Built-in AI 语言模型接口；但当前内置模型不可用。"
-        : "检测到当前浏览器可创建 WebGPU Adapter，可接入 MediaPipe LLM Inference Web 运行时；但尚未加载具体模型文件，无法判断模型厂商。",
+          ? "检测到当前浏览器可创建 WebGPU Adapter，且存在 Chrome Built-in AI 语言模型接口；但当前内置模型不可用。"
+          : "检测到当前浏览器可创建 WebGPU Adapter，可接入 MediaPipe LLM Inference Web 运行时；但尚未加载具体模型文件，无法判断模型厂商。",
     };
   };
 
@@ -706,7 +705,7 @@ if (agentDashboard) {
           setAgentReady(payload);
           nextRefreshMs = payload.refreshMs || 1000;
         }
-      } catch (error) {}
+      } catch (error) { }
     };
 
     probe.onerror = async () => {
