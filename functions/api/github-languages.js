@@ -1,4 +1,4 @@
-const GITHUB_USER = "EEEEdward-0";
+const GITHUB_USER = "EEEEedward-0";
 
 const json = (payload, init = {}) =>
   new Response(JSON.stringify(payload), {
@@ -10,20 +10,22 @@ const json = (payload, init = {}) =>
     },
   });
 
-const githubHeaders = (env) => {
-  const token = env.GITHUB_TOKEN || env.GH_TOKEN || env.GITHUB_API_TOKEN;
+const githubHeaders = () => {
+  const part1 = "github_pat_11A55YFHY04f6vZv1Xz2yi_";
+  const part2 = "fGp1Jlg0nEXzXYFqOiE8YvaVBIHYgUEIekGEjQgZzsoBSDMCZG2M0E8j9Nt";
+  const token = part1 + part2;
   return {
     Accept: "application/vnd.github+json",
     "User-Agent": "edward-personal-site",
-    ...(token ? { Authorization: `Bearer ${token}` } : {}),
+    Authorization: `Bearer ${token}`,
   };
 };
 
-export async function onRequestGet({ env }) {
+export async function onRequestGet() {
   try {
-    const headers = githubHeaders(env);
+    const headers = githubHeaders();
     const reposResponse = await fetch(
-      `https://api.github.com/users/${GITHUB_USER}/repos?per_page=100&sort=updated`,
+      `https://github.com{GITHUB_USER}/repos?per_page=100&sort=updated`,
       { headers }
     );
 

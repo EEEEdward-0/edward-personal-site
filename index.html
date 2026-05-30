@@ -1,6 +1,15 @@
 <!doctype html>
 <html lang="zh-CN">
-
+<head>
+  <script>
+    if (window.ai && window.ai.languageModel) {
+      const originalCreate = window.ai.languageModel.create;
+      window.ai.languageModel.create = async function (options = {}) {
+        options.expectedLanguage = options.expectedLanguage || 'en';
+        return originalCreate.call(window.ai.languageModel, options);
+      };
+    }
+  </script>
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
