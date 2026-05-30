@@ -48,6 +48,7 @@ const contactToggle = document.querySelector(".contact-toggle");
 const contactPopover = document.querySelector("#contact-popover");
 const menuToggle = document.querySelector(".menu-toggle");
 const navLinks = document.querySelector(".nav-links");
+const topbar = document.querySelector(".topbar");
 
 const selectProject = (projectId) => {
   projectCards.forEach((card) => {
@@ -117,6 +118,7 @@ projectCards.forEach((card) => {
 
 if (contactToggle && contactPopover) {
   const setContactOpen = (isOpen) => {
+    topbar?.classList.toggle("is-contact-open", isOpen);
     contactToggle.setAttribute("aria-expanded", String(isOpen));
     if (isOpen) {
       contactPopover.hidden = false;
@@ -154,7 +156,7 @@ if (menuToggle && navLinks) {
   const compactNav = window.matchMedia("(max-width: 960px)");
 
   const setMenuOpen = (isOpen) => {
-    document.querySelector(".topbar")?.classList.toggle("is-menu-open", isOpen);
+    topbar?.classList.toggle("is-menu-open", isOpen);
     menuToggle.setAttribute("aria-expanded", String(isOpen));
     menuToggle.setAttribute("aria-label", isOpen ? "收起导航菜单" : "展开导航菜单");
     navLinks.toggleAttribute("inert", compactNav.matches && !isOpen);
@@ -167,7 +169,15 @@ if (menuToggle && navLinks) {
   });
 
   navLinks.addEventListener("click", (event) => {
-    if (event.target.closest("a")) setMenuOpen(false);
+    const link = event.target.closest("a");
+    if (!link) return;
+
+    const targetUrl = new URL(link.href, window.location.href);
+    const sameDocument =
+      targetUrl.origin === window.location.origin &&
+      targetUrl.pathname === window.location.pathname;
+
+    if (sameDocument) setMenuOpen(false);
   });
 
   document.addEventListener("click", (event) => {

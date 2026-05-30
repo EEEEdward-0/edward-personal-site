@@ -14,6 +14,48 @@
   --wide: 1440px;
 }
 
+@view-transition {
+  navigation: auto;
+}
+
+::view-transition-old(root),
+::view-transition-new(root) {
+  animation-duration: 260ms;
+  animation-timing-function: cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+
+::view-transition-old(root) {
+  animation-name: page-fade-out;
+}
+
+::view-transition-new(root) {
+  animation-name: page-fade-in;
+}
+
+@keyframes page-fade-out {
+  from {
+    opacity: 1;
+    transform: translateY(0);
+  }
+
+  to {
+    opacity: 0;
+    transform: translateY(-8px);
+  }
+}
+
+@keyframes page-fade-in {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
 /* Work experience accordion */
 .timeline-section > .work-browser {
   width: min(calc(100% - 40px), var(--wide));
@@ -287,13 +329,13 @@ img {
   position: fixed;
   z-index: 20;
   top: 0;
-  left: 50%;
+  left: 0;
   width: 100%;
   height: 44px;
   display: flex;
   align-items: center;
-  justify-content: space-between;
-  padding: 0 max(18px, calc((100vw - var(--max)) / 2));
+  justify-content: flex-start;
+  padding: 0 18px;
   border-bottom: 1px solid rgba(29, 29, 31, 0.08); /* 极细底边线 */
   border-radius: 0;
   /* 使用高精度苹果磨砂玻璃，提供完美的高透通透感，彻底移除了液态畸变滤镜 */
@@ -302,7 +344,6 @@ img {
   -webkit-backdrop-filter: blur(20px) !important;
   box-shadow: 0 1px 12px rgba(0, 0, 0, 0.02) !important;
   overflow: visible;
-  transform: translateX(-50%);
 }
 
 /* 强力防御性清除：防止 HTML 中带有 data-glass 属性时，在 topbar 渲染多余的液态滤镜及高亮白边 */
@@ -339,6 +380,8 @@ img {
 
 .nav-links {
   gap: 30px;
+  margin-left: auto;
+  justify-content: flex-end;
 }
 
 .nav-links a,
@@ -1759,6 +1802,11 @@ h1 span {
 }
 
 @media (prefers-reduced-motion: reduce) {
+  ::view-transition-old(root),
+  ::view-transition-new(root) {
+    animation: none !important;
+  }
+
   *,
   *::before,
   *::after {
@@ -3763,6 +3811,10 @@ main:focus {
     background: rgba(255, 255, 255, 0.92) !important;
   }
 
+  .topbar.is-contact-open {
+    overflow: visible;
+  }
+
   .topbar .brand {
     height: 44px;
   }
@@ -3854,8 +3906,14 @@ main:focus {
   }
 
   .topbar .contact-popover {
-    top: 96px;
-    right: 18px;
+    position: fixed;
+    top: 94px;
+    right: max(18px, env(safe-area-inset-right));
+    width: min(320px, calc(100vw - 36px));
+    z-index: 80;
+    box-shadow:
+      0 22px 60px rgba(0, 0, 0, 0.16),
+      inset 0 0 0 1px rgba(255, 255, 255, 0.72);
   }
 }
 
