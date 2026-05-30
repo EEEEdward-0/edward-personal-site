@@ -1,0 +1,131 @@
+<!doctype html>
+<html lang="zh-CN">
+
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="description" content="Edward Zheng 的技术札记，记录运维、数据、自动化与可维护系统的实践方法。" />
+  <title>Edward's Lab | Notes & Small Systems</title>
+  <link rel="icon" href="assets/favicon.svg" type="image/svg+xml" />
+  <link rel="stylesheet" href="styles.css" />
+</head>
+
+<body class="lab-page">
+  <a class="skip-link" href="#main-content">跳到主要内容</a>
+  <svg class="liquid-glass-filter" aria-hidden="true" focusable="false" width="0" height="0">
+    <filter id="liquid-glass-distortion" x="-8%" y="-8%" width="116%" height="116%">
+      <feTurbulence type="fractalNoise" baseFrequency="0.012 0.018" numOctaves="2" seed="12" result="glassNoise" />
+      <feDisplacementMap in="SourceGraphic" in2="glassNoise" scale="14" xChannelSelector="R" yChannelSelector="G" />
+    </filter>
+  </svg>
+
+  <div class="site-shell">
+    <header class="topbar" data-glass>
+      <a class="brand" href="index.html#main-content" aria-label="回到首页">
+        <span class="brand-mark">EZ</span>
+        <span>Edward Zheng</span>
+      </a>
+      <nav class="nav-links" aria-label="主导航">
+        <a href="index.html#skills">技能</a>
+        <a href="index.html#experience">经历</a>
+        <a href="index.html#projects">项目</a>
+        <a href="lab.html" aria-current="page">札记</a>
+        <button class="contact-toggle" type="button" aria-expanded="false" aria-controls="contact-popover">联系</button>
+      </nav>
+      <button class="a11y-toggle" type="button" aria-expanded="false" aria-controls="a11y-panel">辅助</button>
+      <div class="contact-popover" id="contact-popover" data-glass hidden>
+        <a class="mail-card" href="mailto:jueslibrary@gamil.com">
+          <span class="mail-logo" aria-hidden="true">
+            <svg viewBox="0 0 48 48">
+              <path fill="#ea4335" d="M6 14.4 24 27.8l18-13.4v22.2A3.4 3.4 0 0 1 38.6 40H9.4A3.4 3.4 0 0 1 6 36.6Z" />
+              <path fill="#fbbc04" d="M6 14.4v-2A3.4 3.4 0 0 1 11.4 9L24 18.4v9.4Z" />
+              <path fill="#34a853" d="M42 14.4v22.2A3.4 3.4 0 0 1 38.6 40H35V19.6Z" />
+              <path fill="#4285f4" d="M42 12.4v2L35 19.6 24 27.8v-9.4L36.6 9A3.4 3.4 0 0 1 42 12.4Z" />
+            </svg>
+          </span>
+          <span>
+            <strong>Google Mail</strong>
+            <small>jueslibrary@gamil.com</small>
+          </span>
+        </a>
+      </div>
+      <div class="a11y-panel" id="a11y-panel" data-glass hidden>
+        <p class="a11y-title">辅助浏览</p>
+        <button class="a11y-option" type="button" data-a11y-toggle="largeText" aria-pressed="false">大字号</button>
+        <button class="a11y-option" type="button" data-a11y-toggle="highContrast" aria-pressed="false">高对比</button>
+        <button class="a11y-option" type="button" data-a11y-toggle="reducedMotion" aria-pressed="false">减少动画</button>
+      </div>
+    </header>
+
+    <main class="lab-main" id="main-content" tabindex="-1">
+      <section class="lab-hero reveal">
+        <p class="eyebrow">Lab Notes</p>
+        <h1>把零散经验，整理成可以复用的小系统。</h1>
+        <p>
+          这里不是另一份简历，而是一个技术工作台：记录排障、自动化、数据处理、家庭实验室和无障碍体验里的方法论。
+        </p>
+      </section>
+
+      <section class="lab-grid" aria-label="技术札记主题">
+        <article class="lab-card reveal" data-glass>
+          <strong>01</strong>
+          <h2>本地优先</h2>
+          <p>网络与数据项目尽量把核心判断放在本地运行，减少依赖链，也让结果更容易验证和复现。</p>
+        </article>
+        <article class="lab-card reveal delay-1" data-glass>
+          <strong>02</strong>
+          <h2>自动化优先</h2>
+          <p>脚本不是为了炫技，而是把重复操作、巡检和数据清洗变成稳定、可回放的工作流。</p>
+        </article>
+        <article class="lab-card reveal delay-2" data-glass>
+          <strong>03</strong>
+          <h2>可观察</h2>
+          <p>从日志、指标、状态灯到可视化报告，系统应该让人知道它正在发生什么，以及哪里需要处理。</p>
+        </article>
+        <article class="lab-card reveal delay-3" data-glass>
+          <strong>04</strong>
+          <h2>可访问</h2>
+          <p>好的界面要能被键盘、读屏、低视力用户和移动端用户顺畅使用，这也是工程质量的一部分。</p>
+        </article>
+      </section>
+
+      <section class="lab-note-list reveal" aria-labelledby="lab-process-title">
+        <h2 id="lab-process-title">我的实践顺序</h2>
+        <ol>
+          <li>
+            <span>Observe</span>
+            <p>先把现象、日志、失败路径和人为操作记录清楚，不急着重构。</p>
+          </li>
+          <li>
+            <span>Automate</span>
+            <p>把高频动作变成脚本、规则或小工具，保留人工复核点。</p>
+          </li>
+          <li>
+            <span>Verify</span>
+            <p>用可重复的数据、浏览器验证和边界场景确认结果，避免只看“看起来没问题”。</p>
+          </li>
+          <li>
+            <span>Document</span>
+            <p>把经验写成短说明，方便后续维护，也方便别人接手。</p>
+          </li>
+        </ol>
+      </section>
+    </main>
+
+    <footer class="site-footer">
+      <div class="footer-powered">
+        <span>Power by</span>
+        <a class="footer-brand" href="https://www.cloudflare.com" target="_blank" rel="noreferrer">Cloudflare</a>
+        <span>&amp;</span>
+        <a class="footer-brand" href="https://openai.com" target="_blank" rel="noreferrer">OpenAI</a>
+        <span>&amp;</span>
+        <a class="footer-brand" href="https://github.com/EEEEdward-0" target="_blank" rel="noreferrer">GitHub</a>
+      </div>
+      <div class="footer-credit">Design by Edward</div>
+    </footer>
+  </div>
+
+  <script src="script.js"></script>
+</body>
+
+</html>

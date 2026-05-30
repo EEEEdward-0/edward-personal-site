@@ -10,6 +10,7 @@
 - Project Experiences
 - Education
 - Contact 与站点页脚品牌信息
+- Lab Notes 子页面，用于整理技术方法、实验记录与可访问性思考
 
 ## 技术
 
@@ -18,6 +19,7 @@
 - JavaScript
 - Responsive layout
 - Apple-inspired visual style
+- Accessibility controls: skip link, ARIA states, high contrast, large text, reduced motion
 
 ## 部署
 

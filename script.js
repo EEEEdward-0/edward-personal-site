@@ -212,3 +212,91 @@ if (infraVisual) {
 
   infraObserver.observe(infraVisual);
 }
+
+const root = document.documentElement;
+const a11yToggle = document.querySelector(".a11y-toggle");
+const a11yPanel = document.querySelector("#a11y-panel");
+const a11yOptions = document.querySelectorAll("[data-a11y-toggle]");
+const a11yClasses = {
+  largeText: "a11y-large-text",
+  highContrast: "a11y-high-contrast",
+  reducedMotion: "a11y-reduce-motion",
+};
+let storedA11y = {};
+
+try {
+  storedA11y = JSON.parse(localStorage.getItem("edward-a11y") || "{}");
+} catch {
+  storedA11y = {};
+}
+
+a11yOptions.forEach((option) => {
+  const key = option.dataset.a11yToggle;
+  const className = a11yClasses[key];
+  if (!className) return;
+
+  const active = Boolean(storedA11y[key]);
+  root.classList.toggle(className, active);
+  option.setAttribute("aria-pressed", String(active));
+
+  option.addEventListener("click", () => {
+    const next = !root.classList.contains(className);
+    root.classList.toggle(className, next);
+    option.setAttribute("aria-pressed", String(next));
+    storedA11y[key] = next;
+    localStorage.setItem("edward-a11y", JSON.stringify(storedA11y));
+  });
+});
+
+if (a11yToggle && a11yPanel) {
+  const setA11yOpen = (open) => {
+    a11yToggle.setAttribute("aria-expanded", String(open));
+    a11yPanel.hidden = !open;
+  };
+
+  a11yToggle.addEventListener("click", (event) => {
+    event.stopPropagation();
+    setA11yOpen(a11yToggle.getAttribute("aria-expanded") !== "true");
+  });
+
+  a11yPanel.addEventListener("click", (event) => event.stopPropagation());
+  document.addEventListener("click", () => setA11yOpen(false));
+  document.addEventListener("keydown", (event) => {
+    if (event.key === "Escape") setA11yOpen(false);
+  });
+}
+
+const projectIcons = document.querySelectorAll(".project-icon");
+const prefersReducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)");
+
+const playProjectIcon = (icon) => {
+  if (prefersReducedMotion.matches || root.classList.contains("a11y-reduce-motion")) return;
+  icon.classList.remove("is-animating");
+  void icon.offsetWidth;
+  icon.classList.add("is-animating");
+  window.setTimeout(() => icon.classList.remove("is-animating"), 1900);
+};
+
+if (projectIcons.length > 0) {
+  const iconObserver = new IntersectionObserver(
+    (entries) => {
+      entries.forEach((entry) => {
+        if (entry.isIntersecting && entry.target.dataset.played !== "true") {
+          entry.target.dataset.played = "true";
+          playProjectIcon(entry.target);
+        }
+        if (!entry.isIntersecting) {
+          entry.target.dataset.played = "false";
+        }
+      });
+    },
+    { threshold: 0.58, rootMargin: "0px 0px -8% 0px" }
+  );
+
+  projectIcons.forEach((icon) => {
+    iconObserver.observe(icon);
+    icon.addEventListener("pointerenter", () => playProjectIcon(icon));
+    icon.addEventListener("focusin", () => playProjectIcon(icon));
+    icon.addEventListener("touchstart", () => playProjectIcon(icon), { passive: true });
+  });
+}

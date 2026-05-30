@@ -19,6 +19,7 @@
 </svg>
 
 <body>
+  <a class="skip-link" href="#main-content">跳到主要内容</a>
   <svg class="liquid-glass-filter" aria-hidden="true" focusable="false" width="0" height="0">
     <filter id="liquid-glass-distortion" x="-8%" y="-8%" width="116%" height="116%">
       <feTurbulence type="fractalNoise" baseFrequency="0.012 0.018" numOctaves="2" seed="12" result="glassNoise" />
@@ -27,7 +28,7 @@
   </svg>
   <div class="site-shell">
     <header class="topbar" data-glass>
-      <a class="brand" href="#top" aria-label="回到顶部">
+      <a class="brand" href="#main-content" aria-label="回到顶部">
         <span class="brand-mark">EZ</span>
         <span>Edward Zheng</span>
       </a>
@@ -35,8 +36,10 @@
         <a href="#skills">技能</a>
         <a href="#experience">经历</a>
         <a href="#projects">项目</a>
+        <a href="lab.html">札记</a>
         <button class="contact-toggle" type="button" aria-expanded="false" aria-controls="contact-popover">联系</button>
       </nav>
+      <button class="a11y-toggle" type="button" aria-expanded="false" aria-controls="a11y-panel">辅助</button>
       <div class="contact-popover" id="contact-popover" data-glass hidden>
         <a class="mail-card" href="mailto:jueslibrary@gamil.com">
           <span class="mail-logo" aria-hidden="true">
@@ -53,9 +56,15 @@
           </span>
         </a>
       </div>
+      <div class="a11y-panel" id="a11y-panel" data-glass hidden>
+        <p class="a11y-title">辅助浏览</p>
+        <button class="a11y-option" type="button" data-a11y-toggle="largeText" aria-pressed="false">大字号</button>
+        <button class="a11y-option" type="button" data-a11y-toggle="highContrast" aria-pressed="false">高对比</button>
+        <button class="a11y-option" type="button" data-a11y-toggle="reducedMotion" aria-pressed="false">减少动画</button>
+      </div>
     </header>
 
-    <main id="top">
+    <main id="main-content" tabindex="-1">
       <section class="hero section">
         <div class="hero-media" aria-hidden="true">
           <img src="assets/liquid-glass-hero.png" alt="" />
@@ -75,6 +84,7 @@
           <span class="panel-label">Current Focus</span>
           <strong>自动化运维 · 容器化部署 · AI 提高效率</strong>
           <p>用 LLM、脚本与基础设施经验，让排障更快，维护更稳，办公更省。</p>
+          <a class="text-link" href="lab.html">阅读技术札记</a>
         </aside>
       </section>
 
@@ -197,7 +207,7 @@
         </div>
         <div class="project-grid">
           <article class="project-card feature reveal is-selected" data-glass data-project="network" tabindex="0"
-            role="link">
+            role="link" aria-label="打开 GitHub：本地网络异常检测与可视化系统">
             <div class="project-icon network-icon" aria-hidden="true">
               <svg viewBox="0 0 48 48">
                 <path class="ecg-line" d="M5 29h7l3-8 5 17 5-29 6 26 4-11 3 5h5" />
@@ -213,7 +223,8 @@
             <p>基于 Core ML 完成端侧部署，并结合 SQLite + Trie 实现本地规则库与 IP / CIDR 高效匹配。</p>
             <span class="github-link">打开 GitHub</span>
           </article>
-          <article class="project-card reveal delay-1" data-glass data-project="reddit" tabindex="0" role="link">
+          <article class="project-card reveal delay-1" data-glass data-project="reddit" tabindex="0" role="link"
+            aria-label="打开 GitHub：Reddit 数据隐私审计与自动化抓取工具">
             <div class="project-icon privacy-icon" aria-hidden="true">
               <svg class="privacy-padlock" viewBox="0 0 48 48">
                 <path class="lock-shackle" d="M17 22v-5a7 7 0 0 1 14 0v5" />
@@ -226,7 +237,8 @@
             <p>构建数据抓取、清洗、特征提取、风险识别与报告生成流程，输出标准化风险评分和可视化分析报告。</p>
             <span class="github-link">打开 GitHub</span>
           </article>
-          <article class="project-card reveal delay-2" data-glass data-project="flight" tabindex="0" role="link">
+          <article class="project-card reveal delay-2" data-glass data-project="flight" tabindex="0" role="link"
+            aria-label="打开 GitHub：航班数据处理系统">
             <div class="project-icon data-icon flight-stack-icon" aria-hidden="true">
               <svg viewBox="0 0 48 48">
                 <g class="db-cyl db-cyl-top">
@@ -251,7 +263,8 @@
             <p>搭建分布式批处理环境，完成航班数据接入、清洗、聚合统计与结果输出，并使用 Spark 优化部分任务。</p>
             <span class="github-link">打开 GitHub</span>
           </article>
-          <article class="project-card reveal delay-3" data-glass data-project="home" tabindex="0" role="link">
+          <article class="project-card reveal delay-3" data-glass data-project="home" tabindex="0" role="link"
+            aria-label="打开 GitHub：Home Assistant 智能家居部署">
             <div class="project-icon home-icon" aria-hidden="true">
               <span class="home-glow"></span>
               <span class="home-glyph">
