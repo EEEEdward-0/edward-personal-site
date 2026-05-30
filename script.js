@@ -49,6 +49,7 @@ const contactPopover = document.querySelector("#contact-popover");
 const menuToggle = document.querySelector(".menu-toggle");
 const navLinks = document.querySelector(".nav-links");
 const topbar = document.querySelector(".topbar");
+let setContactOpen = () => {};
 
 const selectProject = (projectId) => {
   projectCards.forEach((card) => {
@@ -117,7 +118,7 @@ projectCards.forEach((card) => {
 });
 
 if (contactToggle && contactPopover) {
-  const setContactOpen = (isOpen) => {
+  setContactOpen = (isOpen) => {
     topbar?.classList.toggle("is-contact-open", isOpen);
     contactToggle.setAttribute("aria-expanded", String(isOpen));
     if (isOpen) {
@@ -161,6 +162,9 @@ if (menuToggle && navLinks) {
     menuToggle.setAttribute("aria-label", isOpen ? "收起导航菜单" : "展开导航菜单");
     navLinks.toggleAttribute("inert", compactNav.matches && !isOpen);
     navLinks.setAttribute("aria-hidden", String(compactNav.matches && !isOpen));
+    if (!isOpen) {
+      setContactOpen(false);
+    }
   };
 
   menuToggle.addEventListener("click", (event) => {
