@@ -704,83 +704,70 @@
     line-height: 1.8;
 }
 
-@media (max-width: 1000px) {
-    .runtime-grid {
-        grid-template-columns: repeat(2, minmax(0, 1fr));
-    }
-
-    .runtime-card-wide {
-        grid-column: auto;
-    }
-
-    .vision-upload,
-    .vision-result {
-        grid-template-columns: 1fr;
-    }
-
-    .dashboard-grid {
-        grid-template-columns: repeat(2, minmax(0, 1fr));
-    }
-
-    .history-table-head,
-    .history-item,
-    .history-empty {
-        min-width: 620px;
-    }
-}
-
 @media (max-width: 560px) {
-    .runtime-shell {
-        width: min(100% - 28px, 1120px);
-        padding: 64px 0;
+    .history-table-head {
+        display: none;
     }
 
-    .runtime-panel,
-    .runtime-unsupported,
-    .vision-panel {
-        padding: 24px;
+    .history-table-inner {
+        overflow-x: visible;
     }
 
-    .runtime-panel-head {
-        flex-direction: column;
+    .history-item {
+        min-width: 0;
+        display: grid;
+        grid-template-columns: 64px minmax(0, 1fr) auto;
+        grid-template-areas:
+            "thumb meta delete"
+            "score score score"
+            "latency latency latency";
+        gap: 12px;
+        padding: 16px;
     }
 
-    .runtime-grid {
-        grid-template-columns: 1fr;
+    .history-item img,
+    .history-thumb-fallback {
+        grid-area: thumb;
+        width: 56px;
+        height: 56px;
     }
 
-    .runtime-card strong {
-        white-space: normal;
-        overflow: visible;
-        text-overflow: clip;
+    .history-item div {
+        grid-area: meta;
+        display: flex;
+        align-items: center;
+        min-width: 0;
     }
 
-    .vision-result strong {
-        white-space: normal;
-        overflow: visible;
-        text-overflow: clip;
+    .history-delete {
+        grid-area: delete;
+        align-self: center;
     }
 
-    .dashboard-grid {
-        grid-template-columns: 1fr;
+    .history-item>span:nth-of-type(1) {
+        grid-area: score;
     }
 
-    .dashboard-grid strong,
-    .history-item span,
-    .history-item strong {
-        white-space: normal;
-        overflow: visible;
-        text-overflow: clip;
+    .history-item>span:nth-of-type(2) {
+        grid-area: latency;
+    }
+
+    .history-item>span:nth-of-type(1),
+    .history-item>span:nth-of-type(2) {
+        display: flex;
+        justify-content: space-between;
+        text-align: left;
+        width: 100%;
     }
 
     .history-item>span:nth-of-type(1)::before {
-        content: "可信度 ";
+        content: "可信度";
         color: #86868b;
         font-weight: 800;
     }
 
     .history-item>span:nth-of-type(2)::before {
-        content: "思考时长 ";
+        content: "思考时长";
         color: #86868b;
         font-weight: 800;
     }
