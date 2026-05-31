@@ -482,6 +482,48 @@
   text-underline-offset: 4px;
 }
 
+.edge-demo-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 12px;
+  width: fit-content;
+  margin-top: 22px;
+  padding: 12px 16px;
+  border-radius: 999px;
+  background: #1d1d1f;
+  color: #f5f5f7;
+  font-size: 14px;
+  font-weight: 800;
+  line-height: 1;
+  text-decoration: none;
+  box-shadow: 0 12px 28px rgba(0, 0, 0, .12);
+  transition: transform .2s ease, opacity .2s ease, box-shadow .2s ease;
+}
+
+.edge-demo-link small {
+  color: rgba(245, 245, 247, .68);
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.edge-demo-link::after {
+  content: "↗";
+  color: rgba(245, 245, 247, .82);
+  font-size: 13px;
+  transform: translateY(-1px);
+}
+
+.edge-demo-link:hover {
+  transform: translateY(-1px);
+  opacity: .92;
+  box-shadow: 0 16px 34px rgba(0, 0, 0, .16);
+}
+
+.edge-demo-link:focus-visible {
+  outline: 3px solid rgba(0, 102, 204, .25);
+  outline-offset: 4px;
+}
+
 .edge-render-visual {
   position: relative;
   width: min(100%, 680px);
@@ -654,6 +696,11 @@
 
   .edge-flow-item h3 {
     letter-spacing: -0.052em;
+  }
+
+  .edge-demo-link {
+    width: 100%;
+    justify-content: center;
   }
 
   .edge-runtime-strip {
