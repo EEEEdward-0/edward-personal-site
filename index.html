@@ -1,16 +1,5 @@
 <!doctype html>
 <html lang="zh-CN">
-<head>
-  <script>
-    if (window.ai && window.ai.languageModel) {
-      const originalCreate = window.ai.languageModel.create;
-      window.ai.languageModel.create = async function (options = {}) {
-        options.expectedLanguage = options.expectedLanguage || 'en';
-        return originalCreate.call(window.ai.languageModel, options);
-      };
-    }
-  </script>
-<head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <meta name="description" content="Edward Zheng 的个人空间，记录技术实践、项目想法、学习路径与正在探索的方向。" />
@@ -393,6 +382,7 @@
   </div>
 
   <script src="script.js"></script>
+<script defer src="https://static.cloudflareinsights.com/beacon.min.js/v833ccba57c9e4d2798f2e76cebdd09a11778172276447" integrity="sha512-57MDmcccJXYtNnH+ZiBwzC4jb2rvgVCEokYN+L/nLlmO8rfYT/gIpW2A569iJ/3b+0UEasghjuZH/ma3wIs/EQ==" data-cf-beacon='{"version":"2024.11.0","token":"07c67dbdbd014f419e37bf711e29905f","r":1,"server_timing":{"name":{"cfCacheStatus":true,"cfEdge":true,"cfExtPri":true,"cfL4":true,"cfOrigin":true,"cfSpeedBrain":true},"location_startswith":null}}' crossorigin="anonymous"></script>
 </body>
 
 </html>

@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Browser-native AI Runtime Probe</title>
+
+    <link rel="stylesheet" href="./styles/common.css" />
+    <link rel="stylesheet" href="./styles/runtime-probe.css" />
+</head>
+
+<body class="runtime-page">
+    <main class="runtime-shell">
+        <section class="runtime-hero">
+            <p class="runtime-kicker">01 / Runtime Layer</p>
+
+            <h1>Browser-native AI Runtime</h1>
+
+            <p class="runtime-desc">
+                检测当前浏览器是否支持 WebGPU、端侧推理与本地模型执行能力。
+            </p>
+
+            <button class="runtime-trigger" id="runtimeTrigger" type="button">
+                Run Test
+            </button>
+        </section>
+
+        <section class="runtime-panel" id="runtimePanel" hidden>
+            <div class="runtime-panel-head">
+                <div>
+                    <p class="runtime-kicker">Runtime Status</p>
+                    <h2>Capability Result</h2>
+                </div>
+
+                <span class="runtime-badge" id="runtimeBadge">Checking</span>
+            </div>
+
+            <div class="runtime-grid">
+                <div class="runtime-card">
+                    <span>WebGPU</span>
+                    <strong id="webgpuStatus">-</strong>
+                </div>
+
+                <div class="runtime-card">
+                    <span>GPU Adapter</span>
+                    <strong id="gpuStatus">-</strong>
+                </div>
+
+                <div class="runtime-card">
+                    <span>Device Memory</span>
+                    <strong id="memoryStatus">-</strong>
+                </div>
+
+                <div class="runtime-card">
+                    <span>CPU Threads</span>
+                    <strong id="cpuStatus">-</strong>
+                </div>
+
+                <div class="runtime-card runtime-card-wide">
+                    <span>Runtime Choice</span>
+                    <strong id="runtimeChoice">-</strong>
+                </div>
+
+                <div class="runtime-card runtime-card-wide">
+                    <span>Browser Runtime</span>
+                    <strong id="browserStatus">-</strong>
+                </div>
+            </div>
+        </section>
+        <section class="vision-panel" id="visionPanel" hidden>
+            <div class="vision-head">
+                <p class="runtime-kicker">Local Vision Inference</p>
+                <h2>AI Image Inspector</h2>
+                <p>Upload an image and run browser-native image recognition locally.</p>
+            </div>
+
+            <div class="vision-upload">
+                <input id="imageInput" type="file" accept="image/*" multiple hidden />
+                <button class="runtime-trigger" id="imageSelect" type="button">
+                    Upload Image
+                </button>
+
+                <div class="image-preview-box" id="imagePreviewBox">
+                    <img id="imagePreview" alt="" hidden />
+
+                    <div class="image-preview-placeholder" id="imagePreviewPlaceholder">
+                        <span class="preview-icon">▧</span>
+                        <div class="preview-copy">
+                            <strong>No image selected</strong>
+                            <em>Upload an image to preview</em>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="vision-result" id="visionResult" hidden>
+                <div>
+                    <span>Prediction</span>
+                    <strong id="predictionLabel">-</strong>
+                </div>
+
+                <div>
+                    <span>Confidence</span>
+                    <strong id="predictionScore">-</strong>
+                </div>
+
+                <div>
+                    <span>Latency</span>
+                    <strong id="predictionLatency">-</strong>
+                </div>
+            </div>
+            <div class="runtime-dashboard" id="runtimeDashboard" hidden>
+                <div class="dashboard-head">
+                    <p class="runtime-kicker">Runtime Dashboard</p>
+                    <h3>Local Processing Trace</h3>
+                </div>
+
+                <div class="dashboard-grid">
+
+                    <div>
+                        <span>Batch Progress</span>
+                        <strong id="dashboardProgress">0 / 0</strong>
+                    </div>
+
+                    <div>
+                        <span>Average Latency</span>
+                        <strong id="dashboardAvgLatency">-</strong>
+                    </div>
+
+                    <div>
+                        <span>Average Confidence</span>
+                        <strong id="dashboardAvgConfidence">-</strong>
+                    </div>
+
+                    <div>
+                        <span>Last Prediction</span>
+                        <strong id="dashboardLastPrediction">-</strong>
+                    </div>
+
+                </div>
+
+                <details class="history-panel" open>
+                    <summary class="history-summary">
+                        <div class="history-summary-main">
+                            <span class="history-summary-title">历史记录</span>
+                            <span class="history-summary-desc">本地推理结果与处理轨迹</span>
+                        </div>
+
+                        <div class="history-summary-meta">
+                            <span id="historyCount">0 条记录</span>
+                        </div>
+                    </summary>
+
+                    <div class="history-tools">
+                        <input id="historySearch" type="search" placeholder="搜索识别结果或文件名" />
+
+                        <select id="historySort" aria-label="历史记录排序">
+                            <option value="default">默认排序</option>
+                            <option value="confidence-desc">可信度从高到低</option>
+                            <option value="confidence-asc">可信度从低到高</option>
+                            <option value="latency-desc">思考时长从高到低</option>
+                            <option value="latency-asc">思考时长从低到高</option>
+                        </select>
+
+                        <div class="history-actions">
+                            <button id="exportCsv" type="button">导出 CSV</button>
+                            <button id="exportExcel" type="button">导出 Excel</button>
+                            <button id="clearHistory" type="button">清空记录</button>
+                        </div>
+                    </div>
+
+                    <div class="history-table">
+                        <div class="history-table-inner">
+                            <div class="history-table-head">
+                                <span>图片</span>
+                                <span>识别结果</span>
+                                <span>可信度</span>
+                                <span>思考时长</span>
+                                <span>操作</span>
+                            </div>
+
+                            <div class="history-list" id="historyList"></div>
+                        </div>
+                    </div>
+                </details>
+            </div>
+        </section>
+
+        <section class="runtime-unsupported" id="runtimeUnsupported" hidden>
+            <p class="runtime-kicker">Unsupported</p>
+            <h2>当前浏览器或设备不支持此功能</h2>
+            <p>
+                该 Demo 需要浏览器暴露 WebGPU 能力。如果当前环境不支持，
+                页面将不会展开 Runtime 面板。
+            </p>
+        </section>
+    </main>
+
+    <script type="module" src="./scripts/runtime-probe.js?v=vision-dashboard-11"></script>
+</body>
+
+</html>

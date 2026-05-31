@@ -339,7 +339,7 @@ if (projectIcons.length > 0) {
 }
 
 // ===================================================
-// Part 8: GitHub 语言图表渲染层（已纠正降序排列参数）
+// Part 8: GitHub 语言图表渲染层
 // ===================================================
 
 const languageChart = document.querySelector("#language-chart");
@@ -349,7 +349,6 @@ const languageInfoPopover = document.querySelector("#language-info-popover");
 const languageInfoText = document.querySelector("#language-info-text");
 
 if (languageChart) {
-  const githubUser = "EEEEdward-0";
   const languageColors = {
     Swift: "#111827",
     Python: "#1f6feb",
@@ -364,12 +363,120 @@ if (languageChart) {
   };
 
   const fallbackLanguages = {
-    HTML: 4900000,
-    Python: 427000,
-    Swift: 393000,
-    CSS: 88000,
-    JavaScript: 34000,
-    Shell: 4000,
+    HTML: 4898314,
+    Python: 426886,
+    Swift: 392989,
+    CSS: 87907,
+    JavaScript: 33996,
+    Shell: 4363,
+  };
+
+  const ensureLanguageAnimationStyles = () => {
+    if (document.querySelector("#language-animation-style")) return;
+
+    const style = document.createElement("style");
+    style.id = "language-animation-style";
+    style.textContent = `
+      .language-chart.is-language-loading {
+        min-height: 260px;
+        display: grid;
+        place-items: center;
+      }
+
+      .language-chart.is-language-loading::after {
+        content: "正在读取 GitHub 语言统计…";
+        color: rgba(60, 60, 67, 0.72);
+        font-weight: 700;
+        letter-spacing: 0.02em;
+        animation: languageLoadingPulse 1.4s cubic-bezier(.4, 0, .2, 1) infinite;
+      }
+
+      .language-chart.is-language-ready {
+        display: block;
+      }
+
+      .language-chart.is-language-ready .language-row {
+        opacity: 0;
+        transform: translateY(14px) scale(0.985);
+        animation:
+          languageRowEnter 680ms cubic-bezier(.16, 1, .3, 1) forwards;
+        animation-delay: var(--language-delay);
+      }
+
+      .language-chart.is-language-ready .language-bar {
+        width: var(--language-size);
+        transform-origin: left center;
+        transform: scaleX(0);
+        animation:
+          languageBarGrow var(--language-duration) cubic-bezier(.16, 1, .3, 1) forwards,
+          languageBarSettle 900ms cubic-bezier(.34, 1.56, .64, 1) forwards;
+        animation-delay:
+          calc(var(--language-delay) + 120ms),
+          calc(var(--language-delay) + var(--language-duration) - 220ms);
+      }
+
+      @keyframes languageLoadingPulse {
+        0%, 100% {
+          opacity: .38;
+          transform: translateY(0);
+        }
+        50% {
+          opacity: .82;
+          transform: translateY(-2px);
+        }
+      }
+
+      @keyframes languageRowEnter {
+        0% {
+          opacity: 0;
+          transform: translateY(14px) scale(0.985);
+        }
+        65% {
+          opacity: 1;
+          transform: translateY(-2px) scale(1.006);
+        }
+        100% {
+          opacity: 1;
+          transform: translateY(0) scale(1);
+        }
+      }
+
+      @keyframes languageBarGrow {
+        0% {
+          transform: scaleX(0);
+          filter: saturate(.85) brightness(1.08);
+        }
+        72% {
+          transform: scaleX(1.035);
+          filter: saturate(1.12) brightness(1.04);
+        }
+        100% {
+          transform: scaleX(1);
+          filter: none;
+        }
+      }
+
+      @keyframes languageBarSettle {
+        0% {
+          border-radius: 999px;
+        }
+        100% {
+          border-radius: 999px;
+        }
+      }
+
+      @media (prefers-reduced-motion: reduce) {
+        .language-chart.is-language-loading::after,
+        .language-chart.is-language-ready .language-row,
+        .language-chart.is-language-ready .language-bar {
+          animation: none;
+          opacity: 1;
+          transform: none;
+        }
+      }
+    `;
+
+    document.head.appendChild(style);
   };
 
   const formatBytes = (bytes) => {
@@ -378,49 +485,73 @@ if (languageChart) {
     return `${bytes} B`;
   };
 
+  const setLanguageMessage = (text) => {
+    if (languageStatus) languageStatus.textContent = text;
+    if (languageInfoText) languageInfoText.textContent = text;
+  };
+
+  const setLanguageLoading = () => {
+    ensureLanguageAnimationStyles();
+    languageChart.classList.remove("is-language-ready");
+    languageChart.classList.add("is-language-loading");
+    languageChart.innerHTML = "";
+    setLanguageMessage("正在读取 GitHub 公开仓库语言统计。");
+  };
+
   const renderLanguages = (languageTotals, sourceText) => {
-    // 核心修复：采用显式数字相减的隐式返回进行解构排序，完全纠正原先写反的列表顺序
+    ensureLanguageAnimationStyles();
+
     const entries = Object.entries(languageTotals)
-      .filter(([, bytes]) => bytes > 0)
+      .filter(([, bytes]) => Number(bytes) > 0)
       .sort(([, aBytes], [, bBytes]) => bBytes - aBytes)
       .slice(0, 7);
 
-    const total = entries.reduce((sum, [, bytes]) => sum + bytes, 0) || 1;
+    const total = entries.reduce((sum, [, bytes]) => sum + Number(bytes), 0) || 1;
+
+    languageChart.classList.remove("is-language-loading");
+    languageChart.classList.remove("is-language-ready");
 
     languageChart.innerHTML = entries
       .map(([language, bytes], index) => {
-        const rawPercent = (bytes / total) * 100;
+        const rawPercent = (Number(bytes) / total) * 100;
         const visualPercent = Math.max(rawPercent, 3);
         const color = languageColors[language] || "#8e8e93";
-        const duration = 2300 + Math.floor(Math.random() * 900);
-        const delay = index * 110 + Math.floor(Math.random() * 120);
-        const springMax = (1.018 + Math.random() * 0.035).toFixed(3);
-        const springMin = (0.975 + Math.random() * 0.018).toFixed(3);
+        const delay = 90 + index * 125;
+        const duration = 1450 + index * 95;
 
         return `
-  <div class="language-row" role="listitem" aria-label="${language}，${rawPercent.toFixed(1)}%，${formatBytes(bytes)}">
-    <span class="language-name">${language}</span>
-    <span class="language-track" aria-hidden="true">
-      <span class="language-bar" style="--language-size: ${visualPercent.toFixed(2)}%; --language-color: ${color}; --language-delay: ${delay}ms; --language-duration: ${duration}ms; --language-spring-max: ${springMax}; --language-spring-min: ${springMin};"></span>
-    </span>
-    <span class="language-value">${rawPercent.toFixed(1)}%</span>
-  </div>
-`;
+          <div
+            class="language-row"
+            role="listitem"
+            aria-label="${language}，${rawPercent.toFixed(1)}%，${formatBytes(Number(bytes))}"
+            style="--language-delay: ${delay}ms;"
+          >
+            <span class="language-name">${language}</span>
+            <span class="language-track" aria-hidden="true">
+              <span
+                class="language-bar"
+                style="--language-size: ${visualPercent.toFixed(2)}%; --language-color: ${color}; --language-duration: ${duration}ms;"
+              ></span>
+            </span>
+            <span class="language-value">${rawPercent.toFixed(1)}%</span>
+          </div>
+        `;
       })
       .join("");
 
-    if (languageStatus) {
-      languageStatus.textContent = sourceText;
-    }
-    if (languageInfoText) {
-      languageInfoText.textContent = sourceText;
-    }
+    setLanguageMessage(sourceText);
+
+    window.requestAnimationFrame(() => {
+      languageChart.classList.add("is-language-ready");
+    });
   };
 
   const setLanguageInfoOpen = (isOpen) => {
     if (!languageInfoToggle || !languageInfoPopover) return;
+
     languageInfoToggle.setAttribute("aria-expanded", String(isOpen));
     languageInfoToggle.classList.toggle("is-open", isOpen);
+
     if (isOpen) {
       languageInfoPopover.hidden = false;
       window.requestAnimationFrame(() => languageInfoPopover.classList.add("is-open"));
@@ -439,37 +570,45 @@ if (languageChart) {
       event.stopPropagation();
       setLanguageInfoOpen(languageInfoToggle.getAttribute("aria-expanded") !== "true");
     });
+
     languageInfoPopover.addEventListener("click", (event) => event.stopPropagation());
+
     document.addEventListener("click", () => setLanguageInfoOpen(false));
+
     document.addEventListener("keydown", (event) => {
       if (event.key === "Escape") setLanguageInfoOpen(false);
     });
   }
 
   const loadGitHubLanguages = async () => {
+    setLanguageLoading();
+
     try {
       const languageEndpoint =
         languageChart.dataset.languageEndpoint || "/api/github-languages";
 
-      const pagesFunctionResponse = await fetch(languageEndpoint, {
+      const response = await fetch(languageEndpoint, {
         cache: "no-store",
         headers: { Accept: "application/json" },
       });
 
-      if (pagesFunctionResponse.ok) {
-        const payload = await pagesFunctionResponse.json();
-        if (payload?.languages && Object.keys(payload.languages).length > 0) {
-          renderLanguages(payload.languages, "基于 GitHub 公开仓库语言字节数统计。");
-          return;
-        }
+      if (!response.ok) {
+        throw new Error(`GitHub language endpoint failed: ${response.status}`);
       }
-      throw new Error("Fallback");
+
+      const payload = await response.json();
+
+      if (payload?.languages && Object.keys(payload.languages).length > 0) {
+        renderLanguages(payload.languages, "数据由 GitHub API 提供，基于公开仓库语言字节数统计。");
+        return;
+      }
+
+      throw new Error("Empty language payload");
     } catch (error) {
-      renderLanguages(fallbackLanguages, "GitHub API 暂不可用，当前展示已缓存的语言统计。");
+      renderLanguages(fallbackLanguages, "未读取到 GitHub 数据，当前展示已缓存的语言统计。");
     }
   };
 
-  renderLanguages(fallbackLanguages, "正在读取 GitHub 公开仓库语言统计。");
   loadGitHubLanguages();
 }
 
@@ -720,6 +859,9 @@ if (agentDashboard) {
   }
 
   const loadAgentStatus = async () => {
+  const isLocalPreview = ["localhost", "127.0.0.1"].includes(window.location.hostname);
+
+  if (isLocalPreview) {
     const localAgentEndpoints = [
       "http://127.0.0.1:8788/status",
       "http://127.0.0.1:8788",
@@ -734,16 +876,17 @@ if (agentDashboard) {
         return payload.refreshMs || 1000;
       }
     }
+  }
 
-    const browserRuntime = await detectBrowserLlmRuntime();
-    if (browserRuntime) {
-      setAgentReady(browserRuntime);
-    } else {
-      setAgentUnavailable("未检测到可读取的本机 Agent 状态接口；当前浏览器也不满足 WebGPU 端侧 LLM 推理条件。");
-    }
+  const browserRuntime = await detectBrowserLlmRuntime();
+  if (browserRuntime) {
+    setAgentReady(browserRuntime);
+  } else {
+    setAgentUnavailable("未检测到可读取的本机 Agent 状态接口；当前浏览器也不满足 WebGPU 端侧推理运行条件。");
+  }
 
-    return 15000;
-  };
+  return 15000;
+};
 
   const scheduleAgentStatusLoad = async () => {
     window.clearTimeout(agentStatusTimer);
