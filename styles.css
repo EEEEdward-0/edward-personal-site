@@ -784,7 +784,7 @@ h1 span {
   text-align: center;
   background:
     linear-gradient(180deg, rgba(255, 255, 255, 0.88), rgba(245, 245, 247, 0.92)),
-    url("assets/liquid-glass-hero.png") center / cover;
+    url("/assets/liquid-glass-hero.png") center / cover;
 }
 
 .section-heading {
