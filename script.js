@@ -364,12 +364,12 @@ if (languageChart) {
   };
 
   const fallbackLanguages = {
-    Python: 420000,
-    Swift: 260000,
-    JavaScript: 170000,
-    HTML: 120000,
-    CSS: 90000,
-    Shell: 68000,
+    HTML: 4900000,
+    Python: 427000,
+    Swift: 393000,
+    CSS: 88000,
+    JavaScript: 34000,
+    Shell: 4000,
   };
 
   const formatBytes = (bytes) => {
@@ -389,7 +389,8 @@ if (languageChart) {
 
     languageChart.innerHTML = entries
       .map(([language, bytes], index) => {
-        const percent = Math.max((bytes / total) * 100, 3);
+        const rawPercent = (bytes / total) * 100;
+        const visualPercent = Math.max(rawPercent, 3);
         const color = languageColors[language] || "#8e8e93";
         const duration = 2300 + Math.floor(Math.random() * 900);
         const delay = index * 110 + Math.floor(Math.random() * 120);
@@ -397,14 +398,14 @@ if (languageChart) {
         const springMin = (0.975 + Math.random() * 0.018).toFixed(3);
 
         return `
-          <div class="language-row" role="listitem" aria-label="${language}，${percent.toFixed(1)}%，${formatBytes(bytes)}">
-            <span class="language-name">${language}</span>
-            <span class="language-track" aria-hidden="true">
-              <span class="language-bar" style="--language-size: ${percent.toFixed(2)}%; --language-color: ${color}; --language-delay: ${delay}ms; --language-duration: ${duration}ms; --language-spring-max: ${springMax}; --language-spring-min: ${springMin};"></span>
-            </span>
-            <span class="language-value">${percent.toFixed(1)}%</span>
-          </div>
-        `;
+  <div class="language-row" role="listitem" aria-label="${language}，${rawPercent.toFixed(1)}%，${formatBytes(bytes)}">
+    <span class="language-name">${language}</span>
+    <span class="language-track" aria-hidden="true">
+      <span class="language-bar" style="--language-size: ${visualPercent.toFixed(2)}%; --language-color: ${color}; --language-delay: ${delay}ms; --language-duration: ${duration}ms; --language-spring-max: ${springMax}; --language-spring-min: ${springMin};"></span>
+    </span>
+    <span class="language-value">${rawPercent.toFixed(1)}%</span>
+  </div>
+`;
       })
       .join("");
 
@@ -447,8 +448,11 @@ if (languageChart) {
 
   const loadGitHubLanguages = async () => {
     try {
-      // 核心对齐：直接以绝对完整路径安全直呼您配好密钥的边缘云端独立数据代理
-      const pagesFunctionResponse = await fetch("https://dpdns.org", {
+      const languageEndpoint =
+        languageChart.dataset.languageEndpoint || "/api/github-languages";
+
+      const pagesFunctionResponse = await fetch(languageEndpoint, {
+        cache: "no-store",
         headers: { Accept: "application/json" },
       });
 
@@ -461,7 +465,7 @@ if (languageChart) {
       }
       throw new Error("Fallback");
     } catch (error) {
-      renderLanguages(fallbackLanguages, "GitHub API 暂不可用，当前展示本地项目技术栈估算。");
+      renderLanguages(fallbackLanguages, "GitHub API 暂不可用，当前展示已缓存的语言统计。");
     }
   };
 
@@ -606,7 +610,7 @@ if (agentDashboard) {
     agentDashboard.classList.toggle("is-idle", activityState === "idle");
 
     if (agentTitle) {
-      agentTitle.textContent = payload.title || (isBrowserRuntime ? "浏览器端 LLM Runtime 可用" : "Agent 仪表盘");
+      agentTitle.textContent = payload.title || (isBrowserRuntime ? "浏览器运行能力已检测" : "Agent 仪表盘");
     }
     if (agentSummary) {
       agentSummary.textContent = payload.summary || "检测到可用的 Agent 或浏览器 AI 能力。";
@@ -687,23 +691,23 @@ if (agentDashboard) {
     return {
       available: true,
       kind: "browser-runtime",
-      title: "浏览器端 LLM Runtime 可用",
-      source: "WebGPU / MediaPipe LLM Inference",
-      state: "WebGPU 已就绪",
+      title: "浏览器运行能力已检测",
+      source: "浏览器 WebGPU 能力",
+      state: "WebGPU 可用",
       status: "Runtime",
       activityState: "idle",
       refreshMs: 5000,
-      capability: "端侧 LLM 推理环境",
+      capability: "WebGPU 运行环境",
       modelProvider: hasUsableBuiltInAi
-        ? `可能是 Google Gemini Nano（Chrome Built-in AI: ${builtInAiAvailability}）`
+        ? `Chrome Built-in AI 可用（状态：${builtInAiAvailability}）`
         : builtInAiAvailability
-          ? `无法确认；Chrome Built-in AI 接口存在，但当前状态为 ${builtInAiAvailability}`
-          : "无法判断；MediaPipe/WebGPU 是运行环境，具体厂商取决于加载的模型文件",
+          ? `Chrome Built-in AI 接口存在，但当前状态为 ${builtInAiAvailability}`
+          : "未加载具体模型文件",
       summary: hasUsableBuiltInAi
-        ? "检测到当前浏览器可创建 WebGPU Adapter，且存在 Chrome Built-in AI 语言模型接口；该接口通常对应 Google Gemini Nano。"
+        ? "检测到浏览器支持 WebGPU，并暴露 Chrome Built-in AI 语言模型接口；可作为端侧 AI 运行能力展示。"
         : builtInAiAvailability
-          ? "检测到当前浏览器可创建 WebGPU Adapter，且存在 Chrome Built-in AI 语言模型接口；但当前内置模型不可用。"
-          : "检测到当前浏览器可创建 WebGPU Adapter，可接入 MediaPipe LLM Inference Web 运行时；但尚未加载具体模型文件，无法判断模型厂商。",
+          ? "检测到浏览器支持 WebGPU，并暴露 Chrome Built-in AI 接口；但当前内置模型状态不可用。"
+          : "检测到浏览器支持 WebGPU，可作为端侧推理运行环境展示；当前页面尚未加载具体模型文件。",
     };
   };
 
@@ -716,65 +720,40 @@ if (agentDashboard) {
   }
 
   const loadAgentStatus = async () => {
-    let nextRefreshMs = 15000;
-    const probe = new Image();
+    const localAgentEndpoints = [
+      "http://127.0.0.1:8788/status",
+      "http://127.0.0.1:8788",
+      "http://localhost:8788/status",
+      "http://localhost:8788",
+    ];
 
-    // 核心修复：1. 严格补全 127.0.0.1:8788 本地端口；2. 纠正 Date.now() 的大写
-    probe.src = "http://127.0.0" + Date.now();
-
-    probe.onload = async () => {
-      try {
-        const payload = await fetchJsonWithTimeout("http://127.0.0");
-        if (payload?.available) {
-          setAgentReady(payload);
-          nextRefreshMs = payload.refreshMs || 1000;
-        }
-      } catch (error) { }
-    };
-
-    probe.onerror = async () => {
-      const browserRuntime = await detectBrowserLlmRuntime();
-      if (browserRuntime) {
-        setAgentReady(browserRuntime);
-      } else {
-        setAgentUnavailable("未检测到可读取的本机 Agent 状态接口；当前浏览器也不满足 WebGPU 端侧 LLM 推理条件。");
-      }
-    };
-
-    return nextRefreshMs;
-  };
-
-
-  probe.onload = async () => {
-    try {
-      const payload = await fetchJsonWithTimeout("http://127.0.0");
+    for (const endpoint of localAgentEndpoints) {
+      const payload = await fetchJsonWithTimeout(endpoint);
       if (payload?.available) {
         setAgentReady(payload);
-        nextRefreshMs = payload.refreshMs || 1000;
+        return payload.refreshMs || 1000;
       }
-    } catch (error) { }
-  };
+    }
 
-  probe.onerror = async () => {
     const browserRuntime = await detectBrowserLlmRuntime();
     if (browserRuntime) {
       setAgentReady(browserRuntime);
     } else {
       setAgentUnavailable("未检测到可读取的本机 Agent 状态接口；当前浏览器也不满足 WebGPU 端侧 LLM 推理条件。");
     }
+
+    return 15000;
   };
 
-  return nextRefreshMs;
-};
+  const scheduleAgentStatusLoad = async () => {
+    window.clearTimeout(agentStatusTimer);
+    const nextRefreshMs = await loadAgentStatus();
+    agentStatusTimer = window.setTimeout(scheduleAgentStatusLoad, nextRefreshMs || 15000);
+  };
 
-const scheduleAgentStatusLoad = async () => {
-  window.clearTimeout(agentStatusTimer);
-  const nextRefreshMs = await loadAgentStatus();
-  agentStatusTimer = window.setTimeout(scheduleAgentStatusLoad, nextRefreshMs || 15000);
-};
+  agentTrigger?.addEventListener("click", () => {
+    setAgentBodyOpen(agentTrigger.getAttribute("aria-expanded") !== "true");
+  });
 
-agentTrigger?.addEventListener("click", () => {
-  setAgentBodyOpen(agentTrigger.getAttribute("aria-expanded") !== "true");
-});
-
-scheduleAgentStatusLoad();
+  scheduleAgentStatusLoad();
+}
