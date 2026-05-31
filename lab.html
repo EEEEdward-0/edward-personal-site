@@ -7,7 +7,7 @@
   <meta name="description" content="Edward Zheng 的技术札记，记录运维、数据、自动化与可维护系统的实践方法。" />
   <title>Edward's Lab | Notes & Small Systems</title>
   <link rel="icon" href="assets/favicon.svg" type="image/svg+xml" />
-  <link rel="stylesheet" href="styles.css" />
+  <link rel="stylesheet" href="styles.css?v=language-fix" />
 </head>
 
 <body class="lab-page">
@@ -96,7 +96,56 @@
           <h2 id="language-panel-title">代码语言分布</h2>
           <p class="sr-only" id="language-panel-status" aria-live="polite">正在读取 GitHub 公开仓库语言统计。</p>
         </div>
-        <div class="language-chart" id="language-chart" role="list" aria-label="GitHub 不同编程语言代码量横向柱状图"></div>
+        <div
+          class="language-chart"
+          id="language-chart"
+          role="list"
+          aria-label="GitHub 不同编程语言代码量横向柱状图"
+          data-language-endpoint="https://itwork.dpdns.org/api/github-languages"
+        >
+          <div class="language-row" role="listitem" aria-label="HTML，83.8%，4.9 MB">
+            <span class="language-name">HTML</span>
+            <span class="language-track" aria-hidden="true">
+              <span class="language-bar" style="--language-size: 83.80%; --language-color: #f97316; --language-delay: 0ms; --language-duration: 1900ms; --language-spring-max: 1.022; --language-spring-min: 0.982;"></span>
+            </span>
+            <span class="language-value">83.8%</span>
+          </div>
+          <div class="language-row" role="listitem" aria-label="Python，7.3%，427 KB">
+            <span class="language-name">Python</span>
+            <span class="language-track" aria-hidden="true">
+              <span class="language-bar" style="--language-size: 7.30%; --language-color: #1f6feb; --language-delay: 95ms; --language-duration: 1990ms; --language-spring-max: 1.024; --language-spring-min: 0.981;"></span>
+            </span>
+            <span class="language-value">7.3%</span>
+          </div>
+          <div class="language-row" role="listitem" aria-label="Swift，6.7%，393 KB">
+            <span class="language-name">Swift</span>
+            <span class="language-track" aria-hidden="true">
+              <span class="language-bar" style="--language-size: 6.70%; --language-color: #111827; --language-delay: 190ms; --language-duration: 2080ms; --language-spring-max: 1.026; --language-spring-min: 0.980;"></span>
+            </span>
+            <span class="language-value">6.7%</span>
+          </div>
+          <div class="language-row" role="listitem" aria-label="CSS，1.5%，88 KB">
+            <span class="language-name">CSS</span>
+            <span class="language-track" aria-hidden="true">
+              <span class="language-bar" style="--language-size: 2.00%; --language-color: #38bdf8; --language-delay: 285ms; --language-duration: 2170ms; --language-spring-max: 1.028; --language-spring-min: 0.979;"></span>
+            </span>
+            <span class="language-value">1.5%</span>
+          </div>
+          <div class="language-row" role="listitem" aria-label="JavaScript，0.6%，34 KB">
+            <span class="language-name">JavaScript</span>
+            <span class="language-track" aria-hidden="true">
+              <span class="language-bar" style="--language-size: 2.00%; --language-color: #f2cc60; --language-delay: 380ms; --language-duration: 2260ms; --language-spring-max: 1.030; --language-spring-min: 0.978;"></span>
+            </span>
+            <span class="language-value">0.6%</span>
+          </div>
+          <div class="language-row" role="listitem" aria-label="Shell，0.1%，4 KB">
+            <span class="language-name">Shell</span>
+            <span class="language-track" aria-hidden="true">
+              <span class="language-bar" style="--language-size: 2.00%; --language-color: #10b981; --language-delay: 475ms; --language-duration: 2350ms; --language-spring-max: 1.032; --language-spring-min: 0.978;"></span>
+            </span>
+            <span class="language-value">0.1%</span>
+          </div>
+        </div>
       </section>
 
       <section class="agent-dashboard reveal is-unavailable" aria-labelledby="agent-dashboard-title" data-agent-dashboard>
@@ -241,7 +290,8 @@
     </footer>
   </div>
 
-  <script src="script.js"></script>
+<script src="script.js?v=language-animation-20260531"></script>
+
 </body>
 
 </html>
