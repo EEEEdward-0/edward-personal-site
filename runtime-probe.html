@@ -12,18 +12,54 @@
 
 <body class="runtime-page">
     <main class="runtime-shell">
-        <section class="runtime-hero">
-            <p class="runtime-kicker">01 / Runtime Layer</p>
+        <section class="runtime-carousel" aria-label="Runtime feature sections">
+            <div class="runtime-carousel-track" id="runtimeCarouselTrack">
+                <article class="runtime-hero runtime-slide" aria-label="Browser-native AI Runtime">
+                    <p class="runtime-kicker">01 / Runtime Layer</p>
 
-            <h1>Browser-native AI Runtime</h1>
+                    <h1>Browser-native AI Runtime</h1>
 
-            <p class="runtime-desc">
-                检测当前浏览器是否支持 WebGPU、端侧推理与本地模型执行能力。
-            </p>
+                    <p class="runtime-desc">
+                        检测当前浏览器是否支持 WebGPU、端侧推理与本地模型执行能力。
+                    </p>
 
-            <button class="runtime-trigger" id="runtimeTrigger" type="button">
-                Run Test
-            </button>
+                    <button class="runtime-trigger" id="runtimeTrigger" type="button">
+                        Run Test
+                    </button>
+                </article>
+
+                <article class="camera-panel runtime-slide" id="cameraPanel" aria-label="Camera Emotion Inference">
+                    <div class="camera-copy">
+                        <p class="runtime-kicker">02 / Camera Layer</p>
+                        <h2>Camera Emotion Inference</h2>
+                        <p>
+                            基于连续相机帧进行人脸检测、表情识别与情绪倾向推测。
+                        </p>
+                    </div>
+
+                    <div class="camera-stage">
+                        <div class="camera-preview">
+                            <div class="camera-lens"></div>
+                            <span>Live Camera Stream</span>
+                        </div>
+
+                        <div class="emotion-status-card">
+                            <span>Possible State</span>
+                            <strong>Waiting</strong>
+                            <p>启动相机后显示实时推测结果</p>
+                        </div>
+
+                        <button class="camera-launch" id="cameraLaunch" type="button">
+                            Open Camera Demo
+                        </button>
+                    </div>
+                </article>
+            </div>
+
+            <div class="runtime-carousel-dots" aria-label="Section pagination">
+                <button class="is-active" type="button" aria-label="显示 Runtime Layer" data-slide="0"></button>
+                <button type="button" aria-label="显示 Camera Emotion" data-slide="1"></button>
+            </div>
         </section>
 
         <section class="runtime-panel" id="runtimePanel" hidden>
@@ -68,6 +104,7 @@
                 </div>
             </div>
         </section>
+
         <section class="vision-panel" id="visionPanel" hidden>
             <div class="vision-head">
                 <p class="runtime-kicker">Local Vision Inference</p>
@@ -110,6 +147,7 @@
                     <strong id="predictionLatency">-</strong>
                 </div>
             </div>
+
             <div class="runtime-dashboard" id="runtimeDashboard" hidden>
                 <div class="dashboard-head">
                     <p class="runtime-kicker">Runtime Dashboard</p>
@@ -117,7 +155,6 @@
                 </div>
 
                 <div class="dashboard-grid">
-
                     <div>
                         <span>Batch Progress</span>
                         <strong id="dashboardProgress">0 / 0</strong>
@@ -137,7 +174,6 @@
                         <span>Last Prediction</span>
                         <strong id="dashboardLastPrediction">-</strong>
                     </div>
-
                 </div>
 
                 <details class="history-panel" open>

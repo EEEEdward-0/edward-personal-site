@@ -5,6 +5,9 @@ const trigger = document.querySelector("#runtimeTrigger");
 const panel = document.querySelector("#runtimePanel");
 const unsupported = document.querySelector("#runtimeUnsupported");
 
+const carouselTrack = document.querySelector("#runtimeCarouselTrack");
+const carouselDots = [...document.querySelectorAll(".runtime-carousel-dots button")];
+
 const badge = document.querySelector("#runtimeBadge");
 const webgpuStatus = document.querySelector("#webgpuStatus");
 const gpuStatus = document.querySelector("#gpuStatus");
@@ -50,6 +53,44 @@ console.log("Runtime Probe loaded: vision-dashboard-11");
 
 function wait(ms) {
     return new Promise((resolve) => setTimeout(resolve, ms));
+}
+
+function setActiveSlide(index) {
+    carouselDots.forEach((dot, dotIndex) => {
+        dot.classList.toggle("is-active", dotIndex === index);
+    });
+}
+
+function scrollToSlide(index) {
+    const slide = carouselTrack?.children[index];
+    if (!slide) return;
+
+    slide.scrollIntoView({
+        behavior: "smooth",
+        block: "nearest",
+        inline: "center"
+    });
+
+    setActiveSlide(index);
+}
+
+function syncActiveSlide() {
+    if (!carouselTrack?.children.length) return;
+
+    const trackCenter = carouselTrack.scrollLeft + carouselTrack.clientWidth / 2;
+    const slides = [...carouselTrack.children];
+
+    const activeIndex = slides.reduce((bestIndex, slide, index) => {
+        const slideCenter = slide.offsetLeft + slide.offsetWidth / 2;
+        const bestSlide = slides[bestIndex];
+        const bestCenter = bestSlide.offsetLeft + bestSlide.offsetWidth / 2;
+
+        return Math.abs(slideCenter - trackCenter) < Math.abs(bestCenter - trackCenter)
+            ? index
+            : bestIndex;
+    }, 0);
+
+    setActiveSlide(activeIndex);
 }
 
 function setText(element, value) {
@@ -597,7 +638,7 @@ async function runRuntimeProbe() {
     unsupported.hidden = true;
 
     if (visionPanel) visionPanel.hidden = false;
-
+    
     console.log("Browser Runtime:", navigator.userAgent);
     console.log("GPU Adapter:", adapter.info);
 }
@@ -606,6 +647,16 @@ renderBaseInfo();
 renderHistory();
 
 trigger?.addEventListener("click", runRuntimeProbe);
+
+carouselDots.forEach((dot) => {
+    dot.addEventListener("click", () => {
+        scrollToSlide(Number(dot.dataset.slide) || 0);
+    });
+});
+
+carouselTrack?.addEventListener("scroll", () => {
+    requestAnimationFrame(syncActiveSlide);
+});
 
 imageSelect?.addEventListener("click", () => {
     imageInput?.click();
@@ -649,3 +700,10 @@ historyList?.addEventListener("click", (event) => {
 clearHistory?.addEventListener("click", clearAllHistory);
 exportCsv?.addEventListener("click", exportHistoryAsCsv);
 exportExcel?.addEventListener("click", exportHistoryAsExcel);
+document.querySelector("#cameraLaunch")?.addEventListener("click", () => {
+    window.open(
+        "./camera-emotion.html",
+        "cameraEmotionWindow",
+        "width=1280,height=860,noopener,noreferrer"
+    );
+});
