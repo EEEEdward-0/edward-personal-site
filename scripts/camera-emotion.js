@@ -8,6 +8,7 @@ const cameraCanvas = document.querySelector("#cameraCanvas");
 const cameraIdle = document.querySelector("#cameraIdle");
 const cameraStart = document.querySelector("#cameraStart");
 const cameraStop = document.querySelector("#cameraStop");
+const analyzeFrameButton = document.querySelector("#analyzeFrame");
 
 const recordToggle = document.querySelector("#recordToggle");
 const recordClear = document.querySelector("#recordClear");
@@ -27,12 +28,25 @@ const cameraRuntime = document.querySelector("#cameraRuntime");
 const FRAME_INTERVAL = 650;
 const EMOTION_MODEL_ID = "Xenova/facial_emotions_image_detection";
 const YOLO_MODEL_PATH = "./models/yolov8m-face.onnx";
+const REMOTE_YOLO_ENDPOINT = "/api/emotion-yolo";
+const VISION_FALLBACK_ENDPOINT = "/api/emotion-vision";
 const YOLO_INPUT_SIZE = 640;
 const FACE_CONFIDENCE_THRESHOLD = 0.45;
 const FACE_IOU_THRESHOLD = 0.45;
+const REMOTE_FRAME_QUALITY = 0.82;
+const REMOTE_TIMEOUT = 12000;
+const DEBUG_MODE = new URLSearchParams(window.location.search).get("mode");
+const IS_MOBILE_BROWSER = /Android|iPhone|iPad|iPod|Mobile/i.test(navigator.userAgent);
+
+function resolveInferenceMode() {
+    if (DEBUG_MODE === "local") return false;
+    if (DEBUG_MODE === "remote") return true;
+    return IS_MOBILE_BROWSER;
+}
 
 env.allowLocalModels = false;
 ort.env.wasm.wasmPaths = "https://cdn.jsdelivr.net/npm/onnxruntime-web@1.18.0/dist/";
+ort.env.wasm.numThreads = window.crossOriginIsolated ? Math.min(4, navigator.hardwareConcurrency || 4) : 1;
 
 let cameraStream = null;
 let animationId = null;
@@ -41,6 +55,7 @@ let yoloSession = null;
 let faceOverlay = null;
 let isModelLoading = false;
 let isInferencing = false;
+let isRemoteMode = resolveInferenceMode();
 let lastFrameTime = 0;
 let lastFpsTime = 0;
 let frameCounter = 0;
@@ -380,6 +395,10 @@ function setCameraRunning(isRunning) {
     if (cameraStart) cameraStart.disabled = isRunning || isModelLoading;
     if (cameraStop) cameraStop.disabled = !isRunning;
     if (recordToggle) recordToggle.disabled = !isRunning;
+    if (analyzeFrameButton) {
+        analyzeFrameButton.hidden = !isRemoteMode;
+        analyzeFrameButton.disabled = !isRunning || isInferencing;
+    }
 }
 
 function setCameraStatus({ state, desc, face, confidence, runtime } = {}) {
@@ -460,6 +479,8 @@ async function loadYoloModel() {
 }
 
 async function loadModels() {
+    if (isRemoteMode) return;
+
     isModelLoading = true;
     setCameraRunning(false);
 
@@ -467,6 +488,131 @@ async function loadModels() {
         await Promise.all([loadEmotionModel(), loadYoloModel()]);
     } finally {
         isModelLoading = false;
+    }
+}
+
+function normalizeRemoteEmotion(payload = {}) {
+    const label = payload.emotion || payload.label || payload.state || payload.class || "Unknown";
+    const score = Number(payload.confidence ?? payload.score ?? payload.probability ?? 0);
+    const mapped = mapEmotionLabel(label);
+
+    return {
+        state: mapped.state,
+        desc: payload.description || mapped.desc,
+        label,
+        confidence: Number.isFinite(score) && score > 0 ? `${(score * 100).toFixed(1)}%` : "-",
+        face: payload.face || payload.faces || payload.face_count || "Remote",
+        runtime: payload.runtime || payload.mode || "Remote API"
+    };
+}
+
+async function postFrameToEndpoint(endpoint, blob) {
+    const controller = new AbortController();
+    const timeout = window.setTimeout(() => controller.abort(), REMOTE_TIMEOUT);
+    const formData = new FormData();
+    formData.append("file", blob, "frame.jpg");
+
+    try {
+        const response = await fetch(endpoint, {
+            method: "POST",
+            body: formData,
+            signal: controller.signal
+        });
+
+        if (!response.ok) {
+            throw new Error(`${endpoint} returned ${response.status}`);
+        }
+
+        return await response.json();
+    } finally {
+        window.clearTimeout(timeout);
+    }
+}
+
+async function captureFrameBlob() {
+    if (!cameraVideo || !cameraVideo.videoWidth || !cameraVideo.videoHeight) {
+        return null;
+    }
+
+    const canvas = document.createElement("canvas");
+    canvas.width = cameraVideo.videoWidth;
+    canvas.height = cameraVideo.videoHeight;
+
+    const context = canvas.getContext("2d", { willReadFrequently: true });
+    context.drawImage(cameraVideo, 0, 0, canvas.width, canvas.height);
+
+    return await new Promise((resolve) => {
+        canvas.toBlob(resolve, "image/jpeg", REMOTE_FRAME_QUALITY);
+    });
+}
+
+function renderPreviewFallback(reason = "AI inference service is currently offline.") {
+    setCameraStatus({
+        state: "Preview Mode",
+        desc: `摄像头预览可用，但远程推理暂不可用。${reason}`,
+        face: "Preview Only",
+        confidence: "-",
+        runtime: "Mobile Browser"
+    });
+}
+
+async function inferRemoteFrame() {
+    if (isInferencing || !cameraStream) return;
+    isInferencing = true;
+    if (analyzeFrameButton) analyzeFrameButton.disabled = true;
+
+    try {
+        setCameraStatus({
+            state: "Analyzing",
+            desc: "正在上传当前画面到远程推理服务。",
+            face: "Uploading",
+            confidence: "-",
+            runtime: "Remote API"
+        });
+
+        const blob = await captureFrameBlob();
+        if (!blob) {
+            renderPreviewFallback("当前视频帧尚未准备完成。");
+            return;
+        }
+
+        try {
+            const result = await postFrameToEndpoint(REMOTE_YOLO_ENDPOINT, blob);
+            const normalized = normalizeRemoteEmotion(result);
+            setCameraStatus({
+                state: normalized.state,
+                desc: `${normalized.desc} 原始类别：${normalized.label}。`,
+                face: String(normalized.face),
+                confidence: normalized.confidence,
+                runtime: normalized.runtime || "YOLO Remote API"
+            });
+            return;
+        } catch (error) {
+            console.warn("Remote YOLO unavailable:", error);
+        }
+
+        try {
+            const result = await postFrameToEndpoint(VISION_FALLBACK_ENDPOINT, blob);
+            const normalized = normalizeRemoteEmotion(result);
+            setCameraStatus({
+                state: normalized.state,
+                desc: `${normalized.desc} 当前为 Cloudflare Vision Demo fallback。原始类别：${normalized.label}。`,
+                face: String(normalized.face),
+                confidence: normalized.confidence,
+                runtime: normalized.runtime || "Vision Demo"
+            });
+            return;
+        } catch (error) {
+            console.warn("Vision fallback unavailable:", error);
+        }
+
+        renderPreviewFallback("YOLO API 和 Vision fallback 均未返回有效结果。");
+    } catch (error) {
+        console.error("Remote emotion inference failed:", error);
+        renderPreviewFallback("远程推理请求失败，请检查 API 路由或网络状态。");
+    } finally {
+        isInferencing = false;
+        if (analyzeFrameButton) analyzeFrameButton.disabled = !cameraStream;
     }
 }
 
@@ -623,8 +769,48 @@ async function detectFaces() {
     return nonMaxSuppression(boxes);
 }
 
-function drawFaceOverlay() {
-    clearOverlay();
+function drawFaceOverlay(faces = []) {
+    const overlay = ensureFaceOverlay();
+    if (!overlay || !cameraVideo?.videoWidth || !cameraVideo?.videoHeight) return;
+
+    const rect = cameraVideo.getBoundingClientRect();
+    const width = Math.round(rect.width || cameraVideo.videoWidth);
+    const height = Math.round(rect.height || cameraVideo.videoHeight);
+    const dpr = window.devicePixelRatio || 1;
+
+    overlay.width = Math.round(width * dpr);
+    overlay.height = Math.round(height * dpr);
+    overlay.style.width = `${width}px`;
+    overlay.style.height = `${height}px`;
+
+    const context = overlay.getContext("2d");
+    context.setTransform(dpr, 0, 0, dpr, 0, 0);
+    context.clearRect(0, 0, width, height);
+
+    const scale = Math.max(width / cameraVideo.videoWidth, height / cameraVideo.videoHeight);
+    const renderedWidth = cameraVideo.videoWidth * scale;
+    const renderedHeight = cameraVideo.videoHeight * scale;
+    const offsetX = (width - renderedWidth) / 2;
+    const offsetY = (height - renderedHeight) / 2;
+
+    for (const face of faces) {
+        const x = offsetX + face.x * scale;
+        const y = offsetY + face.y * scale;
+        const boxWidth = face.width * scale;
+        const boxHeight = face.height * scale;
+
+        context.lineWidth = 2;
+        //context.strokeStyle = "rgba(0, 122, 255, 0.95)";
+        //context.fillStyle = "rgba(0, 122, 255, 0.14)";
+        context.beginPath();
+        context.roundRect(x, y, boxWidth, boxHeight, 14);
+        context.fill();
+        context.stroke();
+
+        context.fillStyle = "rgba(0, 122, 255, 0.95)";
+        context.font = "700 12px -apple-system, BlinkMacSystemFont, sans-serif";
+        context.fillText(`${(face.score * 100).toFixed(1)}%`, x + 8, Math.max(16, y - 6));
+    }
 }
 
 function clearOverlay() {
@@ -672,7 +858,7 @@ async function inferCurrentFrame() {
 
     try {
         const faces = await detectFaces();
-        drawFaceOverlay(faces);
+        drawFaceOverlay();
 
         if (!faces.length) {
             setCameraStatus({
@@ -772,6 +958,7 @@ async function startCameraEmotion() {
         setText(emotionConfidence, "-");
         setText(cameraFps, "-");
 
+        isRemoteMode = resolveInferenceMode();
         await loadModels();
 
         cameraStream = await navigator.mediaDevices.getUserMedia({
@@ -792,15 +979,26 @@ async function startCameraEmotion() {
         frameCounter = 0;
 
         setCameraRunning(true);
-        setCameraStatus({
-            state: "Analyzing",
-            desc: "摄像头已启动，正在使用 YOLO 检测人脸并进行表情分类。",
-            face: "Scanning",
-            confidence: "-",
-            runtime: "YOLO + Emotion"
-        });
+        if (isRemoteMode) {
+            setCameraStatus({
+                state: "Preview Mode",
+                desc: "移动端已启动摄像头。点击 Analyze Frame 上传单帧进行远程推理。",
+                face: "Ready",
+                confidence: "-",
+                runtime: "Remote Inference"
+            });
+            setText(cameraFps, "manual");
+        } else {
+            setCameraStatus({
+                state: "Analyzing",
+                desc: "摄像头已启动，正在使用 YOLO 检测人脸并进行表情分类。",
+                face: "Scanning",
+                confidence: "-",
+                runtime: "YOLO + Emotion"
+            });
 
-        animationId = requestAnimationFrame(analyzeCameraLoop);
+            animationId = requestAnimationFrame(analyzeCameraLoop);
+        }
     } catch (error) {
         console.error("Camera start failed:", error);
 
@@ -808,7 +1006,9 @@ async function startCameraEmotion() {
         isModelLoading = false;
         setCameraStatus({
             state: "Start Failed",
-            desc: "启动失败。请确认模型文件位于 models/yolov8m-face.onnx，并允许浏览器访问摄像头。",
+            desc: isRemoteMode
+                ? "启动失败。请确认浏览器已允许访问摄像头，且页面运行在 HTTPS 环境。"
+                : "启动失败。请确认模型文件位于 models/yolov8m-face.onnx，并允许浏览器访问摄像头。",
             face: "Blocked",
             confidence: "-",
             runtime: "Browser"
@@ -857,8 +1057,10 @@ cameraStart?.addEventListener("click", startCameraEmotion);
 cameraStop?.addEventListener("click", stopCameraEmotion);
 recordToggle?.addEventListener("click", toggleRecordTimeline);
 recordClear?.addEventListener("click", resetRecordTimeline);
+analyzeFrameButton?.addEventListener("click", inferRemoteFrame);
 window.addEventListener("pagehide", stopCameraEmotion);
 
 ensureFaceOverlay();
 setCameraRunning(false);
+if (analyzeFrameButton) analyzeFrameButton.hidden = true;
 updateRecordUI();

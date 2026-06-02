@@ -96,6 +96,10 @@
     z-index: 2;
 }
 
+#cameraCanvas {
+    display: none !important;
+}
+
 .camera-idle {
     position: absolute;
     inset: 0;
@@ -144,6 +148,16 @@
 .camera-secondary {
     background: #e8e8ed;
     color: #1d1d1f;
+}
+
+#analyzeFrame {
+    background: #0066cc;
+    color: #fff;
+}
+
+#analyzeFrame:disabled {
+    opacity: .5;
+    cursor: not-allowed;
 }
 
 .camera-secondary:disabled {
