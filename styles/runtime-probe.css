@@ -1766,3 +1766,133 @@
     fill: #BFBFC1;
     stroke: none;
 }
+
+.runtime-page .runtime-carousel-track {
+    scroll-padding-left: 0;
+}
+
+.runtime-page .runtime-slide {
+    align-items: center;
+}
+
+.runtime-page .runtime-hero,
+.runtime-page .camera-panel {
+    width: min(1040px, calc(100vw - 64px));
+    max-width: min(1040px, calc(100vw - 64px));
+    min-height: 620px;
+    border-radius: 36px;
+    background:
+        radial-gradient(circle at 82% 20%, rgba(29, 29, 31, .08), transparent 34%),
+        rgba(255, 255, 255, .74);
+    border: 1px solid rgba(0, 0, 0, .06);
+    box-shadow:
+        inset 0 1px 0 rgba(255, 255, 255, .72),
+        0 22px 64px rgba(29, 29, 31, .035);
+}
+
+.runtime-page .runtime-hero {
+    display: grid;
+    grid-template-columns: minmax(0, .92fr) minmax(360px, .78fr);
+    align-items: center;
+    gap: 44px;
+    padding: 64px;
+    overflow: hidden;
+}
+
+.runtime-page .camera-panel {
+    display: grid;
+    grid-template-columns: minmax(0, .9fr) minmax(360px, 1.1fr);
+    align-items: center;
+    gap: 36px;
+    padding: 48px;
+    overflow: hidden;
+}
+
+.runtime-page .camera-preview.camera-face-preview {
+    min-height: 360px;
+    display: grid;
+    place-items: center;
+    overflow: visible;
+    border: 0;
+    border-radius: 0;
+    background: transparent;
+    box-shadow: none;
+    color: #1d1d1f;
+}
+
+.runtime-page .camera-preview.camera-face-preview::before,
+.runtime-page .camera-preview.camera-face-preview::after {
+    display: none;
+    content: none;
+}
+
+.runtime-page .camera-preview.camera-face-preview .face-scan-ring {
+    width: 300px;
+    height: 300px;
+    border-radius: 50%;
+    position: relative;
+    display: grid;
+    place-items: center;
+}
+
+.runtime-page .camera-preview.camera-face-preview .face-scan-ring::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    border-radius: 50%;
+    background: repeating-conic-gradient(
+        from 0deg,
+        rgba(174, 174, 178, .72) 0deg 1.15deg,
+        transparent 1.15deg 4.8deg
+    );
+    mask-image: radial-gradient(circle, transparent 61%, #000 62%, #000 64%, transparent 65%);
+    -webkit-mask-image: radial-gradient(circle, transparent 61%, #000 62%, #000 64%, transparent 65%);
+    animation: faceScanRotate 22s linear infinite;
+}
+
+.runtime-page .camera-preview.camera-face-preview .face-scan-face {
+    width: 142px;
+    height: 142px;
+    display: grid;
+    place-items: center;
+    color: #BFBFC1;
+}
+
+.runtime-page .camera-preview.camera-face-preview .face-scan-face svg {
+    width: 100%;
+    height: 100%;
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 5.8;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+    filter:
+        drop-shadow(8px 12px 18px rgba(191, 191, 193, .18))
+        drop-shadow(22px 28px 42px rgba(191, 191, 193, .12));
+}
+
+@media (max-width: 760px) {
+    .runtime-page .runtime-hero,
+    .runtime-page .camera-panel {
+        grid-template-columns: 1fr;
+        width: calc(100vw - 48px);
+        max-width: calc(100vw - 48px);
+        min-height: auto;
+        padding: 30px 22px;
+        border-radius: 30px;
+    }
+
+    .runtime-page .camera-preview.camera-face-preview {
+        min-height: 260px;
+    }
+
+    .runtime-page .camera-preview.camera-face-preview .face-scan-ring {
+        width: 236px;
+        height: 236px;
+    }
+
+    .runtime-page .camera-preview.camera-face-preview .face-scan-face {
+        width: 116px;
+        height: 116px;
+    }
+}
