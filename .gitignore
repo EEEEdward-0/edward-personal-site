@@ -4,3 +4,5 @@ dist/
 .env
 models/*.onnx
 models/glb/moon-lro-8k.glb
+
+models/yolov8m-face.onnx
