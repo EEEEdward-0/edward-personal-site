@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>ISS Earth View</title>
+  <link rel="stylesheet" href="./styles/common.css" />
+  <link rel="stylesheet" href="./styles/immersive-lab.css" />
+  <script type="importmap">
+    {
+      "imports": {
+        "three": "https://cdn.jsdelivr.net/npm/three@0.164.1/build/three.module.js",
+        "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.164.1/examples/jsm/"
+      }
+    }
+  </script>
+</head>
+<body class="immersive-page">
+  <button class="immersive-back" type="button" aria-label="返回 Lab">&lt;</button>
+
+  <main class="iss-shell">
+    <section class="iss-hero">
+      <div class="iss-copy">
+        <p class="iss-kicker">03 / IMMERSIVE EARTH VIEW</p>
+        <h1 class="scene-title"><span id="sceneTitleMain">Earth</span><br><span id="sceneTitleSub">Observer</span></h1>
+        <p>基于 NASA 地球影像与 ISS 实时经纬度，模拟从国际空间站俯瞰的沉浸式视角。</p>
+      </div>
+
+      <canvas id="earthCanvas" aria-label="Immersive Earth scene"></canvas>
+
+      <div class="immersive-loader" id="immersiveLoader" aria-hidden="true">
+        <div class="loader-door loader-door-top"></div>
+        <div class="loader-door loader-door-bottom"></div>
+        <div class="loader-copy">
+          <span>Loading orbital scene</span>
+          <strong id="loaderProgress">0%</strong>
+        </div>
+      </div>
+
+      <div class="scene-ui" id="issStage">
+        <div class="satellite-switches" aria-label="Satellite layer switches">
+          <button type="button" class="is-active" data-sat-toggle="iss">ISS</button>
+          <button type="button" class="is-active" data-sat-toggle="starlink">Starlink</button>
+          <button type="button" class="is-active" data-sat-toggle="weather">Weather</button>
+          <button type="button" class="motion-toggle" id="motionToggle">Motion View</button>
+        </div>
+
+        <div class="scene-inspector" aria-label="Model inspect controls">
+          <button type="button" data-scene-focus="iss">ISS Detail</button>
+          <button type="button" data-scene-focus="starlink">Starlink Detail</button>
+          <button type="button" data-scene-focus="weather">Weather Detail</button>
+          <button type="button" data-scene-focus="lro">LRO Detail</button>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <script type="module" src="./scripts/immersive-lab.js?v=door-load-01"></script>
+<footer class="immersive-footer">
+  <div class="immersive-footer-left">
+    <span>Powered by</span>
+    <span class="footer-brand">
+      <img src="https://www.nasa.gov/wp-content/themes/nasa/assets/images/nasa-logo.svg" alt="NASA" />
+      NASA
+    </span>
+    <span>&amp;</span>
+    <span class="footer-brand">
+      <img src="https://www.gstatic.com/images/branding/product/1x/earth_48dp.png" alt="Google Earth" />
+      Google Earth
+    </span>
+  </div>
+
+  <strong>Designed by Edward</strong>
+</footer>
+<script>
+  document.querySelector(".immersive-back")?.addEventListener("click", () => {
+    if (history.length > 1) {
+      history.back();
+      return;
+    }
+
+    window.location.href = "lab.html";
+  });
+</script>
+</body>
+</html>

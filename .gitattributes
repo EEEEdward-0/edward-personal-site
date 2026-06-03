@@ -1,1 +1,2 @@
 *.onnx filter=lfs diff=lfs merge=lfs -text
+models/glb/moon-lro-8k.glb filter=lfs diff=lfs merge=lfs -text

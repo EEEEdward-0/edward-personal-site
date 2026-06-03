@@ -7,8 +7,8 @@
   <meta name="description" content="Edward Zheng 的技术札记，记录运维、数据、自动化与可维护系统的实践方法。" />
   <title>Edward's Lab | Notes & Small Systems</title>
   <link rel="icon" href="assets/favicon.svg" type="image/svg+xml" />
-  <link rel="stylesheet" href="styles.css">
-  <link rel="stylesheet" href="styles/lab.css">
+  <link rel="stylesheet" href="./styles/home.css">
+  <link rel="stylesheet" href="./styles/lab.css">
 </head>
 
 <body class="lab-page">
@@ -28,7 +28,7 @@
         <a href="index.html#skills">技能</a>
         <a href="index.html#experience">经历</a>
         <a href="index.html#projects">项目</a>
-        <a href="lab.html" aria-current="page">札记</a>
+        <a href="lab.html" aria-current="page">Lab</a>
         <button class="contact-toggle" type="button" aria-expanded="false" aria-controls="contact-popover">联系</button>
       </nav>
       <div class="contact-popover" id="contact-popover" data-glass hidden>
@@ -46,13 +46,11 @@
             <small>jueslibrary@gamil.com</small>
           </span>
         </a>
-        <a class="mail-card" href="https://www.linkedin.com/in/%E9%83%91-%E5%8D%93%E8%B1%AA-880251353/" target="_blank"
-          rel="noreferrer">
+        <a class="mail-card" href="https://www.linkedin.com/in/%E9%83%91-%E5%8D%93%E8%B1%AA-880251353/" target="_blank" rel="noreferrer">
           <span class="mail-logo linkedin-logo" aria-hidden="true">
             <svg viewBox="0 0 48 48">
               <rect width="48" height="48" rx="10" fill="#0a66c2" />
-              <path fill="#fff"
-                d="M14.7 19.6h6.1v17.9h-6.1V19.6Zm3.1-8.9a3.5 3.5 0 1 1 0 7 3.5 3.5 0 0 1 0-7Zm7 8.9h5.8v2.5h.1c.8-1.5 2.8-3.1 5.7-3.1 6.1 0 7.2 4 7.2 9.2v9.3h-6.1v-8.2c0-2 0-4.5-2.7-4.5s-3.2 2.1-3.2 4.3v8.4h-6.1V19.6Z" />
+              <path fill="#fff" d="M14.7 19.6h6.1v17.9h-6.1V19.6Zm3.1-8.9a3.5 3.5 0 1 1 0 7 3.5 3.5 0 0 1 0-7Zm7 8.9h5.8v2.5h.1c.8-1.5 2.8-3.1 5.7-3.1 6.1 0 7.2 4 7.2 9.2v9.3h-6.1v-8.2c0-2 0-4.5-2.7-4.5s-3.2 2.1-3.2 4.3v8.4h-6.1V19.6Z" />
             </svg>
           </span>
           <span>
@@ -65,7 +63,7 @@
 
     <main class="lab-main" id="main-content" tabindex="-1">
       <p class="sr-only">
-        技术札记页面支持键盘导航和系统级辅助偏好。页面不依赖声音表达信息，动画仅作为视觉补充。
+        页面支持键盘导航和系统级辅助偏好。页面不依赖声音表达信息，动画仅作为视觉补充。
       </p>
       <section class="lab-hero reveal">
         <p class="eyebrow">Lab Notes</p>
@@ -76,8 +74,7 @@
       </section>
 
       <section class="language-panel reveal" data-glass aria-labelledby="language-panel-title">
-        <button class="language-info-toggle" type="button" aria-label="查看 GitHub 语言统计说明" aria-expanded="false"
-          aria-controls="language-info-popover">
+        <button class="language-info-toggle" type="button" aria-label="查看 GitHub 语言统计说明" aria-expanded="false" aria-controls="language-info-popover">
           <span aria-hidden="true">+</span>
         </button>
         <div class="language-info-popover" id="language-info-popover" role="dialog" aria-label="GitHub 语言统计说明" hidden>
@@ -107,7 +104,7 @@
             <strong>On-device intelligence, GPU-native interface, portable service thinking.</strong>
             <p>
               该 section 强调浏览器内执行、隐私边界、复杂 UI 架构和沉浸式 3D 渲染能力。
-              它不读取访客本机进程，也不依赖 localhost 服务，更适合作为公开作品集中的技术深度展示。
+              它不读取访客本机进程，也不依赖 localhost 服务。
             </p>
           </aside>
 
@@ -120,8 +117,7 @@
               <span>01 / Runtime Layer</span>
               <h3>Browser-native AI Runtime</h3>
               <p>
-                检测 WebGPU、Chrome Built-in AI API 与端侧推理准备状态，判断浏览器是否具备本地模型执行、
-                GPU 加速和隐私友好的 AI 计算能力。
+                检测 WebGPU、Chrome Built-in AI API 与端侧推理准备状态，判断浏览器是否具备本地模型执行、GPU 加速和隐私友好的 AI 计算能力。
               </p>
               <div class="edge-tags">
                 <b>WebGPU</b>
@@ -142,14 +138,38 @@
               <span>02 / Interface Layer</span>
               <h3>Complex UI Architecture</h3>
               <p>
-                以 React、Vue 或 Angular 的组件化思想组织复杂 UI，把模型状态、用户输入、异步任务、
-                错误提示和可访问性反馈拆分成可维护的界面模块。
+                以 camera-emotion 为例，把摄像头输入、情绪识别、状态管理和图表渲染拆成清晰的数据流，展示复杂 AI 界面的组件协作方式。
               </p>
               <div class="edge-tags">
                 <b>React</b>
                 <b>Vue</b>
                 <b>Angular</b>
                 <b>State flow</b>
+              </div>
+              <div class="ui-architecture-demo" aria-label="复杂 UI 状态流演示">
+                <div class="ui-arch-flow" aria-hidden="true">
+                  <span class="ui-arch-node is-active" data-ui-arch-step="camera">Camera Input</span>
+                  <i></i>
+                  <span class="ui-arch-node" data-ui-arch-step="engine">Emotion Engine</span>
+                  <i></i>
+                  <span class="ui-arch-node" data-ui-arch-step="store">Reactive Store</span>
+                  <i></i>
+                  <span class="ui-arch-node" data-ui-arch-step="charts">Timeline &amp; Charts</span>
+                </div>
+                <div class="ui-arch-console">
+                  <div class="ui-arch-console-head">
+                    <span>Event Bus</span>
+                    <button class="ui-arch-run" type="button" data-ui-arch-run>Listen Live</button>
+                  </div>
+                  <div class="ui-arch-log" data-ui-arch-log>
+                    <span>[ready] waiting for camera-emotion events</span>
+                  </div>
+                  <pre class="ui-arch-state" data-ui-arch-state>{
+  "status": "listening-ready",
+  "source": "camera-emotion.html",
+  "transport": "BroadcastChannel + localStorage"
+}</pre>
+                </div>
               </div>
             </section>
 
@@ -161,8 +181,7 @@
               <span>03 / Rendering Layer</span>
               <h3>Immersive 3D Scene</h3>
               <p>
-                使用 Three.js 或 Babylon.js 构建 GPU 加速的沉浸式 3D 场景，表达模型状态、数据流动、
-                节点关系和实时交互反馈，而不是停留在静态卡片展示。
+                使用 Three.js 或 Babylon.js 构建 GPU 加速的沉浸式 3D 场景，表达模型状态、数据流动、节点关系和实时交互反馈，而不是停留在静态卡片展示。
               </p>
               <div class="edge-render-visual" aria-hidden="true">
                 <i></i><i></i><i></i><i></i><i></i>
@@ -172,6 +191,11 @@
                 <b>Babylon.js</b>
                 <b>GPU rendering</b>
               </div>
+
+              <a class="edge-demo-link immersive-entry" href="immersive-lab.html" aria-label="打开沉浸式地月轨道页面">
+                <span>Open Immersive Earth</span>
+                <small>Earth · Moon · ISS · LRO</small>
+              </a>
             </section>
 
             <section class="edge-flow-item">
@@ -182,8 +206,7 @@
               <span>04 / Edge Boundary</span>
               <h3>Worker-powered API Boundary</h3>
               <p>
-                使用 Cloudflare Worker 隔离 GitHub Token、缓存聚合和外部 API 访问，让前端只处理展示、
-                交互和端侧能力检测，保持前后端责任边界清晰。
+                使用 Cloudflare Worker 隔离 GitHub Token、缓存聚合和外部 API 访问，让前端只处理展示、交互和端侧能力检测，保持前后端责任边界清晰。
               </p>
               <div class="edge-tags">
                 <b>Cloudflare Worker</b>
@@ -200,8 +223,7 @@
               <span>05 / Systems Language Layer</span>
               <h3>Go-style Backend Thinking</h3>
               <p>
-                以 Golang 的系统语言思路设计可迁移后端：清晰接口、并发任务、上下文取消、错误处理、
-                缓存策略和服务边界。即使当前由 Worker 承载，也保留迁移到 Go microservice 的架构空间。
+                以 Golang 的系统语言思路设计可迁移后端：清晰接口、并发任务、上下文取消、错误处理、缓存策略和服务边界。即使当前由 Worker 承载，也保留迁移到 Go microservice 的架构空间。
               </p>
               <div class="edge-tags">
                 <b>Golang</b>
@@ -239,8 +261,7 @@
         <span>Powered by</span>
         <a class="footer-brand" href="https://www.cloudflare.com" target="_blank" rel="noreferrer">
           <svg viewBox="0 0 48 48" aria-hidden="true">
-            <path fill="#f38020"
-              d="M31.4 21.4c-.4 0-.8 0-1.2.1a10.4 10.4 0 0 0-19.8 2.9 7.1 7.1 0 0 0-6.3 7.1h31.6a5.1 5.1 0 0 0-4.3-10.1Z" />
+            <path fill="#f38020" d="M31.4 21.4c-.4 0-.8 0-1.2.1a10.4 10.4 0 0 0-19.8 2.9 7.1 7.1 0 0 0-6.3 7.1h31.6a5.1 5.1 0 0 0-4.3-10.1Z" />
             <path fill="#faae40" d="M36.3 31.5h5.4a4.2 4.2 0 0 0 .4-8.4 8 8 0 0 0-15.5-2.7 5.2 5.2 0 0 1 9.7 3.6Z" />
           </svg>
           <span>Cloudflare</span>
@@ -248,17 +269,14 @@
         <span>&amp;</span>
         <a class="footer-brand" href="https://openai.com" target="_blank" rel="noreferrer" aria-label="OpenAI 官网">
           <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
-            <path fill="currentColor"
-              d="M21.46 10.06a5.82 5.82 0 0 0-.5-4.43 5.91 5.91 0 0 0-6.39-2.8A5.9 5.9 0 0 0 10.5 1 5.83 5.83 0 0 0 5.1 4.6a5.9 5.9 0 0 0-3.9 2.77 5.82 5.82 0 0 0 .72 6.92 5.82 5.82 0 0 0 .5 4.43 5.91 5.91 0 0 0 6.39 2.8A5.9 5.9 0 0 0 12.88 23a5.83 5.83 0 0 0 5.4-3.6 5.9 5.9 0 0 0 3.9-2.77 5.82 5.82 0 0 0-.72-6.57ZM12.88 21.5a4.36 4.36 0 0 1-2.8-1l.14-.08 4.65-2.69a.76.76 0 0 0 .38-.65v-6.56l1.97 1.14c.07.04.11.11.11.19v5.43a4.38 4.38 0 0 1-4.45 4.22ZM3.72 17.96a4.33 4.33 0 0 1-.52-2.92l.14.08 4.65 2.69a.76.76 0 0 0 .76 0l5.68-3.28v2.28c0 .08-.04.15-.11.19l-4.7 2.71a4.4 4.4 0 0 1-5.9-1.75ZM2.5 8.12a4.38 4.38 0 0 1 2.28-1.93v5.56c0 .27.14.52.38.66l5.68 3.28-1.97 1.14a.22.22 0 0 1-.22 0l-4.7-2.71A4.35 4.35 0 0 1 2.5 8.12Zm16.34 3.47-5.68-3.28 1.97-1.14a.22.22 0 0 1 .22 0l4.7 2.71a4.36 4.36 0 0 1-.84 7.99v-5.62a.76.76 0 0 0-.37-.66Zm1.95-2.63-.14-.08L16 6.19a.76.76 0 0 0-.76 0L9.56 9.47V7.19c0-.08.04-.15.11-.19l4.7-2.71a4.4 4.4 0 0 1 6.42 4.67ZM8.75 13.48l-1.97-1.14a.22.22 0 0 1-.11-.19V6.72a4.37 4.37 0 0 1 7.25-3.3l-.14.08L9.13 6.19a.76.76 0 0 0-.38.65v6.64Zm.8-2.16L12 9.9l2.45 1.42v2.84L12 15.58l-2.45-1.42v-2.84Z" />
+            <path fill="currentColor" d="M21.46 10.06a5.82 5.82 0 0 0-.5-4.43 5.91 5.91 0 0 0-6.39-2.8A5.9 5.9 0 0 0 10.5 1 5.83 5.83 0 0 0 5.1 4.6a5.9 5.9 0 0 0-3.9 2.77 5.82 5.82 0 0 0 .72 6.92 5.82 5.82 0 0 0 .5 4.43 5.91 5.91 0 0 0 6.39 2.8A5.9 5.9 0 0 0 12.88 23a5.83 5.83 0 0 0 5.4-3.6 5.9 5.9 0 0 0 3.9-2.77 5.82 5.82 0 0 0-.72-6.57ZM12.88 21.5a4.36 4.36 0 0 1-2.8-1l.14-.08 4.65-2.69a.76.76 0 0 0 .38-.65v-6.56l1.97 1.14c.07.04.11.11.11.19v5.43a4.38 4.38 0 0 1-4.45 4.22ZM3.72 17.96a4.33 4.33 0 0 1-.52-2.92l.14.08 4.65 2.69a.76.76 0 0 0 .76 0l5.68-3.28v2.28c0 .08-.04.15-.11.19l-4.7 2.71a4.4 4.4 0 0 1-5.9-1.75ZM2.5 8.12a4.38 4.38 0 0 1 2.28-1.93v5.56c0 .27.14.52.38.66l5.68 3.28-1.97 1.14a.22.22 0 0 1-.22 0l-4.7-2.71A4.35 4.35 0 0 1 2.5 8.12Zm16.34 3.47-5.68-3.28 1.97-1.14a.22.22 0 0 1 .22 0l4.7 2.71a4.36 4.36 0 0 1-.84 7.99v-5.62a.76.76 0 0 0-.37-.66Zm1.95-2.63-.14-.08L16 6.19a.76.76 0 0 0-.76 0L9.56 9.47V7.19c0-.08.04-.15.11-.19l4.7-2.71a4.4 4.4 0 0 1 6.42 4.67ZM8.75 13.48l-1.97-1.14a.22.22 0 0 1-.11-.19V6.72a4.37 4.37 0 0 1 7.25-3.3l-.14.08L9.13 6.19a.76.76 0 0 0-.38.65v6.64Zm.8-2.16L12 9.9l2.45 1.42v2.84L12 15.58l-2.45-1.42v-2.84Z" />
           </svg>
           <span>OpenAI</span>
         </a>
         <span>&amp;</span>
-        <a class="footer-brand" href="https://github.com/EEEEdward-0" target="_blank" rel="noreferrer"
-          aria-label="GitHub 主页">
+        <a class="footer-brand" href="https://github.com/EEEEdward-0" target="_blank" rel="noreferrer" aria-label="GitHub 主页">
           <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
-            <path fill="currentColor"
-              d="M12 .5a12 12 0 0 0-3.79 23.39c.6.11.82-.26.82-.58v-2.03c-3.34.73-4.04-1.42-4.04-1.42-.55-1.39-1.34-1.76-1.34-1.76-1.09-.75.08-.73.08-.73 1.2.08 1.84 1.24 1.84 1.24 1.07 1.83 2.8 1.3 3.49.99.11-.77.42-1.3.76-1.6-2.67-.3-5.47-1.33-5.47-5.93 0-1.31.47-2.38 1.24-3.22-.12-.3-.54-1.52.12-3.18 0 0 1.01-.32 3.3 1.23A11.4 11.4 0 0 1 12 5.99c1.02 0 2.04.14 3 .41 2.29-1.55 3.3-1.23 3.3-1.23.66 1.66.24 2.88.12 3.18.77.84 1.23 1.91 1.23 3.22 0 4.61-2.81 5.62-5.48 5.92.43.37.81 1.1.81 2.22v3.3c0 .32.22.7.82.58A12 12 0 0 0 12 .5Z" />
+            <path fill="currentColor" d="M12 .5a12 12 0 0 0-3.79 23.39c.6.11.82-.26.82-.58v-2.03c-3.34.73-4.04-1.42-4.04-1.42-.55-1.39-1.34-1.76-1.34-1.76-1.09-.75.08-.73.08-.73 1.2.08 1.84 1.24 1.84 1.24 1.07 1.83 2.8 1.3 3.49.99.11-.77.42-1.3.76-1.6-2.67-.3-5.47-1.33-5.47-5.93 0-1.31.47-2.38 1.24-3.22-.12-.3-.54-1.52.12-3.18 0 0 1.01-.32 3.3 1.23A11.4 11.4 0 0 1 12 5.99c1.02 0 2.04.14 3 .41 2.29-1.55 3.3-1.23 3.3-1.23.66 1.66.24 2.88.12 3.18.77.84 1.23 1.91 1.23 3.22 0 4.61-2.81 5.62-5.48 5.92.43.37.81 1.1.81 2.22v3.3c0 .32.22.7.82.58A12 12 0 0 0 12 .5Z" />
           </svg>
           <span>GitHub</span>
         </a>
@@ -267,7 +285,37 @@
     </footer>
   </div>
 
-  <script src="script.js"></script>
+  <script src="./scripts/home.js"></script>
+<div class="page-transition-door" id="pageTransitionDoor" aria-hidden="true">
+  <span></span>
+  <span></span>
+</div>
+
+<script>
+  document.querySelectorAll(".immersive-entry").forEach((link) => {
+    link.addEventListener("click", (event) => {
+      event.preventDefault();
+
+      const door = document.querySelector("#pageTransitionDoor");
+      sessionStorage.setItem("immersiveDoorEntry", "1");
+      sessionStorage.setItem("labScrollY", String(window.scrollY));
+      door?.classList.add("is-closing");
+
+      window.setTimeout(() => {
+        window.location.href = link.href;
+      }, 620);
+    });
+  });
+</script>
+<script>
+  const restoreLabScrollY = sessionStorage.getItem("labScrollY");
+  if (restoreLabScrollY) {
+    requestAnimationFrame(() => {
+      window.scrollTo(0, Number(restoreLabScrollY));
+      sessionStorage.removeItem("labScrollY");
+    });
+  }
+</script>
 </body>
 
 </html>
