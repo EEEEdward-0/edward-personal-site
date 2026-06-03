@@ -21,11 +21,14 @@ const ISS_ORBIT_PERIOD_MIN = 92.68;
 const ISS_INCLINATION_DEG = 51.64;
 const ISS_EPOCH_MS = Date.UTC(2026, 0, 1, 0, 0, 0);
 
+const RELEASE =
+  "https://github.com/EEEEdward-0/edward-personal-site/releases/latest/download";
+
 const MODEL_PATHS = {
-  moon: "./models/glb/moon-lro-8k.glb",
-  lro: "./models/glb/lro.glb",
-  starlink: "./models/glb/starlink.glb",
-  weather: "./models/glb/weather-goes.glb"
+  moon: `${RELEASE}/moon-lro-8k.glb`,
+  lro: `${RELEASE}/lro.glb`,
+  starlink: `${RELEASE}/starlink.glb`,
+  weather: `${RELEASE}/weather-goes.glb`
 };
 
 const satelliteVisibility = {
@@ -367,7 +370,7 @@ let issModel = null;
 const issSolarPanels = [];
 
   gltfLoader.load(
-    "./models/glb/ISS_stationary.glb",
+    `${RELEASE}/ISS_stationary.glb`,
     (gltf) => {
       issModel = gltf.scene;
       issModel.name = "ISS Station";
