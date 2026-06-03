@@ -6,3 +6,11 @@ models/*.onnx
 models/glb/moon-lro-8k.glb
 
 models/yolov8m-face.onnx
+
+models/
+*.glb
+*.onnx
+*.bin
+*.gguf
+*.safetensors
+*.mlpackage
