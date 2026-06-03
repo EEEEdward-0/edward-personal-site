@@ -859,34 +859,34 @@ if (agentDashboard) {
   }
 
   const loadAgentStatus = async () => {
-  const isLocalPreview = ["localhost", "127.0.0.1"].includes(window.location.hostname);
+    const isLocalPreview = ["localhost", "127.0.0.1"].includes(window.location.hostname);
 
-  if (isLocalPreview) {
-    const localAgentEndpoints = [
-      "http://127.0.0.1:8788/status",
-      "http://127.0.0.1:8788",
-      "http://localhost:8788/status",
-      "http://localhost:8788",
-    ];
+    if (isLocalPreview) {
+      const localAgentEndpoints = [
+        "http://127.0.0.1:8788/status",
+        "http://127.0.0.1:8788",
+        "http://localhost:8788/status",
+        "http://localhost:8788",
+      ];
 
-    for (const endpoint of localAgentEndpoints) {
-      const payload = await fetchJsonWithTimeout(endpoint);
-      if (payload?.available) {
-        setAgentReady(payload);
-        return payload.refreshMs || 1000;
+      for (const endpoint of localAgentEndpoints) {
+        const payload = await fetchJsonWithTimeout(endpoint);
+        if (payload?.available) {
+          setAgentReady(payload);
+          return payload.refreshMs || 1000;
+        }
       }
     }
-  }
 
-  const browserRuntime = await detectBrowserLlmRuntime();
-  if (browserRuntime) {
-    setAgentReady(browserRuntime);
-  } else {
-    setAgentUnavailable("未检测到可读取的本机 Agent 状态接口；当前浏览器也不满足 WebGPU 端侧推理运行条件。");
-  }
+    const browserRuntime = await detectBrowserLlmRuntime();
+    if (browserRuntime) {
+      setAgentReady(browserRuntime);
+    } else {
+      setAgentUnavailable("未检测到可读取的本机 Agent 状态接口；当前浏览器也不满足 WebGPU 端侧推理运行条件。");
+    }
 
-  return 15000;
-};
+    return 15000;
+  };
 
   const scheduleAgentStatusLoad = async () => {
     window.clearTimeout(agentStatusTimer);
@@ -900,3 +900,136 @@ if (agentDashboard) {
 
   scheduleAgentStatusLoad();
 }
+
+// ==========================================
+// Part 11: Complex UI Architecture 跨页面实时事件流
+// ==========================================
+
+const UI_ARCH_EVENT_KEY = "cameraEmotionLatestEvent";
+const UI_ARCH_CHANNEL_NAME = "camera-emotion-events";
+
+function initUiArchitectureFlowDemo() {
+  const runButton = document.querySelector("[data-ui-arch-run]");
+  const log = document.querySelector("[data-ui-arch-log]");
+  const state = document.querySelector("[data-ui-arch-state]");
+  const nodes = document.querySelectorAll("[data-ui-arch-step]");
+
+  if (!runButton || !log || !state || nodes.length === 0) return;
+
+  const history = [];
+  const maxHistory = 4;
+  let listening = false;
+  let channel = null;
+  let pollTimer = null;
+  let lastEventId = "";
+
+  const renderLog = () => {
+    log.replaceChildren(
+      ...history.map((line) => {
+        const item = document.createElement("span");
+        item.textContent = line;
+        return item;
+      })
+    );
+  };
+
+  const pushLine = (text) => {
+    history.unshift(`${new Date().toLocaleTimeString()} · ${text}`);
+    history.splice(maxHistory);
+    renderLog();
+  };
+
+  const setActiveStep = (key) => {
+    nodes.forEach((node) => {
+      node.classList.toggle("is-active", node.dataset.uiArchStep === key);
+    });
+  };
+
+  const normalizeEvent = (payload) => {
+    if (!payload || typeof payload !== "object") return null;
+
+    const eventId = payload.id || `${payload.timestamp || Date.now()}-${payload.event || "event"}`;
+    const step = payload.step || "store";
+    const event = payload.event || "camera-emotion:event";
+    const detail = payload.state || payload.detail || payload;
+
+    return { eventId, step, event, detail };
+  };
+
+  const consumeEvent = (payload) => {
+    const next = normalizeEvent(payload);
+    if (!next || next.eventId === lastEventId) return;
+
+    lastEventId = next.eventId;
+    setActiveStep(next.step);
+    pushLine(next.event);
+    state.textContent = JSON.stringify(next.detail, null, 2);
+  };
+
+  const readLatestStorageEvent = () => {
+    try {
+      const raw = localStorage.getItem(UI_ARCH_EVENT_KEY);
+      if (!raw) return;
+      consumeEvent(JSON.parse(raw));
+    } catch (error) {
+      pushLine("localStorage event parse failed");
+    }
+  };
+
+  function handleCameraEmotionStorage(event) {
+    if (event.key !== UI_ARCH_EVENT_KEY || !event.newValue) return;
+
+    try {
+      consumeEvent(JSON.parse(event.newValue));
+    } catch (error) {
+      pushLine("storage event parse failed");
+    }
+  }
+
+  const startListening = () => {
+    listening = true;
+    history.length = 0;
+    lastEventId = "";
+    renderLog();
+    runButton.textContent = "Stop Listening";
+    pushLine("Listening for camera-emotion events");
+
+    readLatestStorageEvent();
+
+    if ("BroadcastChannel" in window) {
+      channel = new BroadcastChannel(UI_ARCH_CHANNEL_NAME);
+      channel.addEventListener("message", (event) => consumeEvent(event.data));
+    }
+
+    window.addEventListener("storage", handleCameraEmotionStorage);
+    pollTimer = window.setInterval(readLatestStorageEvent, 300);
+  };
+
+  const stopListening = () => {
+    listening = false;
+    runButton.textContent = "Listen Live";
+    pushLine("Live listener stopped");
+
+    if (channel) {
+      channel.close();
+      channel = null;
+    }
+
+    window.removeEventListener("storage", handleCameraEmotionStorage);
+    window.clearInterval(pollTimer);
+    pollTimer = null;
+  };
+
+  runButton.textContent = "Listen Live";
+
+  runButton.addEventListener("click", () => {
+    if (listening) {
+      stopListening();
+      return;
+    }
+
+    startListening();
+  });
+}
+
+initUiArchitectureFlowDemo();

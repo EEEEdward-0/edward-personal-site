@@ -1,4 +1,6 @@
 .DS_Store
 node_modules/
 dist/
-.envmodels/*.onnx
+.env
+models/*.onnx
+models/glb/moon-lro-8k.glb

@@ -25,7 +25,7 @@ const cameraFps = document.querySelector("#cameraFps");
 const emotionConfidence = document.querySelector("#emotionConfidence");
 const cameraRuntime = document.querySelector("#cameraRuntime");
 
-const FRAME_INTERVAL = 650;
+const FRAME_INTERVAL = 400;
 const EMOTION_MODEL_ID = "Xenova/facial_emotions_image_detection";
 const YOLO_MODEL_PATH = "./models/yolov8m-face.onnx";
 const REMOTE_YOLO_ENDPOINT = "/api/emotion-yolo";
@@ -37,6 +37,29 @@ const REMOTE_FRAME_QUALITY = 0.82;
 const REMOTE_TIMEOUT = 12000;
 const DEBUG_MODE = new URLSearchParams(window.location.search).get("mode");
 const IS_MOBILE_BROWSER = /Android|iPhone|iPad|iPod|Mobile/i.test(navigator.userAgent);
+const CAMERA_EMOTION_EVENT_KEY = "cameraEmotionLatestEvent";
+const CAMERA_EMOTION_CHANNEL_NAME = "camera-emotion-events";
+const cameraEmotionChannel = "BroadcastChannel" in window
+    ? new BroadcastChannel(CAMERA_EMOTION_CHANNEL_NAME)
+    : null;
+
+function publishCameraEmotionEvent(step, event, state = {}) {
+    const payload = {
+        id: `${Date.now()}-${Math.random().toString(16).slice(2)}`,
+        timestamp: Date.now(),
+        step,
+        event,
+        state
+    };
+
+    try {
+        localStorage.setItem(CAMERA_EMOTION_EVENT_KEY, JSON.stringify(payload));
+    } catch (error) {
+        console.warn("Failed to write camera emotion event:", error);
+    }
+
+    cameraEmotionChannel?.postMessage(payload);
+}
 
 function resolveInferenceMode() {
     if (DEBUG_MODE === "local") return false;
@@ -59,6 +82,52 @@ let isRemoteMode = resolveInferenceMode();
 let lastFrameTime = 0;
 let lastFpsTime = 0;
 let frameCounter = 0;
+const EVENT_THROTTLE_MS = 900;
+const REPEAT_EVENT_INTERVAL_MS = 5000;
+
+let lastPublishedAt = 0;
+let lastPublishedSignature = "";
+
+function shouldPublishEmotionEvent(label, state) {
+    const now = Date.now();
+    const signature = `${label}-${state}`;
+
+    if (now - lastPublishedAt < EVENT_THROTTLE_MS) return false;
+    if (signature === lastPublishedSignature && now - lastPublishedAt < REPEAT_EVENT_INTERVAL_MS) return false;
+
+    lastPublishedAt = now;
+    lastPublishedSignature = signature;
+    return true;
+}
+
+function publishEmotionFlowEvents({ label, state, confidence, runtime, face, faces, source = "local" }) {
+    if (!shouldPublishEmotionEvent(label, state)) return;
+
+    publishCameraEmotionEvent("engine", `Emotion detected · ${label} · ${confidence}`, {
+        module: "emotion-engine",
+        emotion: label,
+        state,
+        confidence,
+        face,
+        faces,
+        runtime
+    });
+
+    publishCameraEmotionEvent("store", `Reactive state updated · ${state}`, {
+        module: "reactive-store",
+        latestState: state,
+        latestEmotion: label,
+        confidence,
+        mode: "reactive"
+    });
+
+    publishCameraEmotionEvent("charts", `Timeline and charts refreshed · ${source} result`, {
+        module: "timeline-charts",
+        updated: ["timeline", "distribution", "summary"],
+        latestEmotion: label,
+        confidence
+    });
+}
 
 let isRecording = false;
 let recordStartedAt = 0;
@@ -586,6 +655,14 @@ async function inferRemoteFrame() {
                 confidence: normalized.confidence,
                 runtime: normalized.runtime || "YOLO Remote API"
             });
+            publishEmotionFlowEvents({
+                label: normalized.label,
+                state: normalized.state,
+                confidence: normalized.confidence,
+                runtime: normalized.runtime || "YOLO Remote API",
+                face: normalized.face,
+                source: "remote"
+            });
             return;
         } catch (error) {
             console.warn("Remote YOLO unavailable:", error);
@@ -600,6 +677,14 @@ async function inferRemoteFrame() {
                 face: String(normalized.face),
                 confidence: normalized.confidence,
                 runtime: normalized.runtime || "Vision Demo"
+            });
+            publishEmotionFlowEvents({
+                label: normalized.label,
+                state: normalized.state,
+                confidence: normalized.confidence,
+                runtime: normalized.runtime || "Vision Demo",
+                face: normalized.face,
+                source: "fallback"
             });
             return;
         } catch (error) {
@@ -895,6 +980,14 @@ async function inferCurrentFrame() {
             confidence,
             runtime: "YOLO + Emotion"
         });
+        publishEmotionFlowEvents({
+            label: emotion.label,
+            state: mapped.state,
+            confidence,
+            runtime: "YOLO + Emotion",
+            faces: faces.length,
+            source: "local"
+        });
     } catch (error) {
         console.error("YOLO emotion inference failed:", error);
         setCameraStatus({
@@ -974,6 +1067,13 @@ async function startCameraEmotion() {
         await cameraVideo.play();
         ensureFaceOverlay();
 
+        publishCameraEmotionEvent("camera", "Camera stream started · live input", {
+            module: "camera-emotion",
+            source: "webcam stream",
+            status: "capturing",
+            mode: isRemoteMode ? "remote" : "local"
+        });
+
         lastFrameTime = 0;
         lastFpsTime = 0;
         frameCounter = 0;
@@ -1049,6 +1149,11 @@ function stopCameraEmotion() {
         face: "Idle",
         confidence: "-",
         runtime: "Browser"
+    });
+    publishCameraEmotionEvent("camera", "Camera stream stopped · idle", {
+        module: "camera-emotion",
+        source: "webcam stream",
+        status: "idle"
     });
     setText(cameraFps, "-");
 }

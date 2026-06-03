@@ -14,44 +14,67 @@
     <main class="runtime-shell">
         <section class="runtime-carousel" aria-label="Runtime feature sections">
             <div class="runtime-carousel-track" id="runtimeCarouselTrack">
-                <article class="runtime-hero runtime-slide" aria-label="Browser-native AI Runtime">
-                    <p class="runtime-kicker">01 / Runtime Layer</p>
+                <article class="runtime-slide" aria-label="Browser-native AI Runtime">
+                    <div class="runtime-hero">
+                        <div class="runtime-copy">
+                            <p class="runtime-kicker">01 / Runtime Layer</p>
 
-                    <h1>Browser-native AI Runtime</h1>
+                            <h1>Browser-native AI Runtime</h1>
 
-                    <p class="runtime-desc">
-                        检测当前浏览器是否支持 WebGPU、端侧推理与本地模型执行能力。
-                    </p>
+                            <p class="runtime-desc">
+                                检测当前浏览器是否支持 WebGPU、端侧推理与本地模型执行能力。
+                            </p>
 
-                    <button class="runtime-trigger" id="runtimeTrigger" type="button">
-                        Run Test
-                    </button>
+                            <button class="runtime-trigger" id="runtimeTrigger" type="button">
+                                Run Test
+                            </button>
+                        </div>
+
+                        <div class="runtime-icon-visual" aria-hidden="true">
+                            <svg class="runtime-core-icon" viewBox="0 0 128 128">
+                                <rect x="25" y="22" width="78" height="66" rx="17"></rect>
+                                <path d="M47 42h38"></path>
+                                <path d="M47 58h36"></path>
+                                <path d="M47 74h26"></path>
+                                <path d="M54 88v15"></path>
+                                <path d="M74 88v15"></path>
+                                <path d="M49 103h30"></path>
+                                <circle cx="38" cy="38" r="3.2"></circle>
+                            </svg>
+                        </div>
+                    </div>
                 </article>
 
-                <article class="camera-panel runtime-slide" id="cameraPanel" aria-label="Camera Emotion Inference">
-                    <div class="camera-copy">
-                        <p class="runtime-kicker">02 / Camera Layer</p>
-                        <h2>Camera Emotion Inference</h2>
-                        <p>
-                            基于连续相机帧进行人脸检测、表情识别与情绪倾向推测。
-                        </p>
-                    </div>
+                <article class="runtime-slide" id="cameraPanel" aria-label="Camera Emotion Inference">
+                    <div class="camera-panel">
+                        <div class="camera-copy">
+                            <p class="runtime-kicker">02 / Camera Layer</p>
+                            <h2>Camera Emotion Inference</h2>
+                            <p>
+                                基于连续相机帧进行人脸检测、表情识别与情绪倾向推测。
+                            </p>
 
-                    <div class="camera-stage">
-                        <div class="camera-preview">
-                            <div class="camera-lens"></div>
-                            <span>Live Camera Stream</span>
+                            <button class="camera-launch" id="cameraLaunch" type="button">
+                                Open Camera Demo
+                            </button>
                         </div>
 
-                        <div class="emotion-status-card">
-                            <span>Possible State</span>
-                            <strong>Waiting</strong>
-                            <p>启动相机后显示实时推测结果</p>
+                        <div class="camera-stage">
+                            <div class="camera-preview camera-face-preview">
+                            <div class="face-scan-ring" aria-hidden="true">
+                                <div class="face-scan-face">
+                                    <svg viewBox="0 0 120 120" aria-hidden="true">
+                                        <circle cx="60" cy="60" r="43"></circle>
+                                        <path d="M43 50v10"></path>
+                                        <path d="M77 50v10"></path>
+                                        <path d="M60 48v19c0 4.5-2.8 7.5-7.5 7.5"></path>
+                                        <path d="M38 76c7 12 36 12 44 0"></path>
+                                    </svg>
+                                </div>
+                            </div>
                         </div>
-
-                        <button class="camera-launch" id="cameraLaunch" type="button">
-                            Open Camera Demo
-                        </button>
+                            </div>
+                        </div>
                     </div>
                 </article>
             </div>
