@@ -80,16 +80,16 @@ const ISS_INCLINATION_DEG = 51.64;
 const ISS_EPOCH_MS = Date.UTC(2026, 0, 1, 0, 0, 0);
 
 const MODEL_PATHS = {
-  moonSmall: "/models/Moon_NASA_LRO_8k_Topo_Small.glb",
-  moon8k: "/models/Moon_NASA_LRO_8k_Topo.glb",
-  moon23k: "/models/Moon_NASA_LRO_23K_Topo.glb",
-  lro: "/models/lro.glb",
-  starlink: "/models/starlink.glb",
-  weather: "/models/weather-goes.glb",
-  ISS: "/models/ISS_stationary.glb"
+  moonSmall: "https://www.itwork.dpdns.org/models/Moon_NASA_LRO_8k_Topo_Small.glb",
+  moon8k: "https://www.itwork.dpdns.org/models/moon-lro-8k.glb",
+  moon23k: "https://www.itwork.dpdns.org/models/Moon_NASA_LRO_23K_Topo.glb",
+  lro: "https://www.itwork.dpdns.org/models/lro.glb",
+  starlink: "https://www.itwork.dpdns.org/models/starlink.glb",
+  weather: "https://www.itwork.dpdns.org/models/weather-goes.glb",
+  ISS: "https://www.itwork.dpdns.org/models/ISS_stationary.glb"
 };
 // Moon 23K 超高清模型加载开关
-const ENABLE_23K = false; // 用户可切换 true 以尝试加载 23K 超高清 Moon
+const ENABLE_23K = true; // 用户可切换 true 以尝试加载 23K 超高清 Moon
 
 const satelliteVisibility = {
   starlink: true,
