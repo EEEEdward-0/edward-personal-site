@@ -21,19 +21,26 @@ const ISS_ORBIT_PERIOD_MIN = 92.68;
 const ISS_INCLINATION_DEG = 51.64;
 const ISS_EPOCH_MS = Date.UTC(2026, 0, 1, 0, 0, 0);
 
-const RELEASE =
-  "https://github.com/EEEEdward-0/edward-personal-site/releases/latest/download";
-
 const MODEL_PATHS = {
-  moon: `${RELEASE}/moon-lro-8k.glb`,
-  lro: `${RELEASE}/lro.glb`,
-  starlink: `${RELEASE}/starlink.glb`,
-  weather: `${RELEASE}/weather-goes.glb`
+  moon: "/models/moon-lro-8k.glb",
+  lro: "/models/lro.glb",
+  starlink: "/models/starlink.glb",
+  weather: "/models/weather-goes.glb",
+  ISS: "/models/ISS_stationary.glb"
 };
 
 const satelliteVisibility = {
   starlink: true,
   weather: true
+};
+
+const isMobile = window.matchMedia("(max-width: 760px)").matches;
+
+// Adjust satellite counts and model sizes for mobile
+const SATELLITE_CONFIG_OVERRIDES = {
+  starlink: { count: isMobile ? 12 : 36, modelSize: isMobile ? 0.007 : 0.012, radius: isMobile ? 2.75 : 2.24 },
+  weather: { count: isMobile ? 3 : 6, modelSize: isMobile ? 0.12 : 0.32, radius: isMobile ? 4.4 : 4.05 },
+  ISS: { modelSize: isMobile ? 0.28 : 0.52 } // ISS scale adjustment for mobile
 };
 
 const TEXTURES = {
@@ -366,15 +373,15 @@ function boot() {
     updateSceneTitle(mode);
   }
 
-let issModel = null;
-const issSolarPanels = [];
+  let issModel = null;
+  const issSolarPanels = [];
 
   gltfLoader.load(
-    `${RELEASE}/ISS_stationary.glb`,
+    MODEL_PATHS.ISS,
     (gltf) => {
       issModel = gltf.scene;
       issModel.name = "ISS Station";
-      normalizeModel(issModel, 0.52);
+      normalizeModel(issModel, SATELLITE_CONFIG_OVERRIDES.ISS.modelSize);
       issModel.rotation.set(0, Math.PI * 0.5, 0);
 
       issModel.traverse((object) => {
@@ -952,28 +959,28 @@ function createSatelliteSystem(loader) {
     {
       key: "starlink",
       label: "Starlink",
-      count: 36,
-      radius: 2.24,
+      count: SATELLITE_CONFIG_OVERRIDES.starlink.count,
+      radius: SATELLITE_CONFIG_OVERRIDES.starlink.radius,
       inclination: 53,
       speed: 0.55,
       color: "#dbeafe",
-      size: 0.012,
+      size: SATELLITE_CONFIG_OVERRIDES.starlink.modelSize,
       planes: 6,
       modelPath: MODEL_PATHS.starlink,
-      modelSize: 0.20
+      modelSize: SATELLITE_CONFIG_OVERRIDES.starlink.modelSize * 17 // keep same ratio as before
     },
     {
       key: "weather",
       label: "Weather",
-      count: 6,
-      radius: 4.05,
+      count: SATELLITE_CONFIG_OVERRIDES.weather.count,
+      radius: SATELLITE_CONFIG_OVERRIDES.weather.radius,
       inclination: 0,
       speed: 0.032,
       color: "#67e8f9",
-      size: 0.024,
+      size: SATELLITE_CONFIG_OVERRIDES.weather.modelSize / 2.7, // keep similar ratio
       planes: 1,
       modelPath: MODEL_PATHS.weather,
-      modelSize: 0.32
+      modelSize: SATELLITE_CONFIG_OVERRIDES.weather.modelSize
     }
   ];
 
