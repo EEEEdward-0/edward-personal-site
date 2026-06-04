@@ -5,7 +5,6 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>ISS Earth View</title>
   <link rel="stylesheet" href="./styles/common.css?v=site-style-14" />
-  <link rel="stylesheet" href="./styles/immersive-lab.css?v=site-style-14" />
   <script type="importmap">
     {
       "imports": {
@@ -56,7 +55,21 @@
     </section>
   </main>
 
-  <script type="module" src="./scripts/immersive-lab.js?v=site-style-14"></script>
+  <script>
+    (() => {
+      const assetVersion = Date.now().toString();
+
+      const immersiveStyle = document.createElement("link");
+      immersiveStyle.rel = "stylesheet";
+      immersiveStyle.href = `./styles/immersive-lab.css?v=${assetVersion}`;
+      document.head.appendChild(immersiveStyle);
+
+      const immersiveScript = document.createElement("script");
+      immersiveScript.type = "module";
+      immersiveScript.src = `./scripts/immersive-lab.js?v=${assetVersion}`;
+      document.body.appendChild(immersiveScript);
+    })();
+  </script>
 <footer class="immersive-footer">
   <div class="immersive-footer-left">
     <span>Powered by</span>

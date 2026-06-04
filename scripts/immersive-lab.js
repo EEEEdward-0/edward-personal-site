@@ -80,12 +80,16 @@ const ISS_INCLINATION_DEG = 51.64;
 const ISS_EPOCH_MS = Date.UTC(2026, 0, 1, 0, 0, 0);
 
 const MODEL_PATHS = {
-  moon: "/models/moon-lro-8k.glb",
+  moonSmall: "/models/Moon_NASA_LRO_8k_Topo_Small.glb",
+  moon8k: "/models/Moon_NASA_LRO_8k_Topo.glb",
+  moon23k: "/models/Moon_NASA_LRO_23K_Topo.glb",
   lro: "/models/lro.glb",
   starlink: "/models/starlink.glb",
   weather: "/models/weather-goes.glb",
   ISS: "/models/ISS_stationary.glb"
 };
+// Moon 23K 超高清模型加载开关
+const ENABLE_23K = false; // 用户可切换 true 以尝试加载 23K 超高清 Moon
 
 const satelliteVisibility = {
   starlink: true,
@@ -181,6 +185,8 @@ function boot() {
 
   const gltfLoader = new GLTFLoader(loadingManager);
   gltfLoader.setDRACOLoader(dracoLoader);
+  const backgroundGltfLoader = new GLTFLoader();
+  backgroundGltfLoader.setDRACOLoader(dracoLoader);
 
   const earth = new THREE.Mesh(
     new THREE.SphereGeometry(EARTH_RADIUS, 128, 128),
@@ -284,8 +290,7 @@ function boot() {
   );
   earthMoonSystem.add(cityLights);
 
-
-  const moon = createMoon(gltfLoader, loader, renderer);
+  const moon = createMoon(backgroundGltfLoader, loader, renderer);
   moon.name = "Moon";
   moon.position.set(MOON_DISPLAY_DISTANCE, 0.65, -1.25);
   scene.add(moon);
@@ -766,6 +771,74 @@ function createMoon(gltfLoader, textureLoader, renderer) {
   moon.userData.surface = surface;
   moon.add(surface);
 
+  function setObjectOpacity(object, opacity) {
+    object.traverse((child) => {
+      if (!child.isMesh || !child.material) return;
+
+      const materials = Array.isArray(child.material) ? child.material : [child.material];
+      materials.forEach((material) => {
+        material.transparent = true;
+        material.opacity = opacity;
+        material.needsUpdate = true;
+      });
+    });
+  }
+
+  function disposeObject(object) {
+    object.traverse((child) => {
+      if (!child.isMesh) return;
+
+      child.geometry?.dispose?.();
+
+      const materials = Array.isArray(child.material) ? child.material : [child.material];
+      materials.forEach((material) => {
+        if (!material) return;
+        ["map", "normalMap", "bumpMap", "roughnessMap", "metalnessMap", "emissiveMap"].forEach((key) => {
+          material[key]?.dispose?.();
+        });
+        material.dispose?.();
+      });
+    });
+  }
+
+  function fadeReplace(oldObject, newObject, fadeTime = 0.75) {
+    if (!newObject) return;
+
+    // Ensure newObject is a Group or Mesh and can be faded
+    setObjectOpacity(newObject, 0);
+    surface.add(newObject);
+
+    let start = 0;
+    function animateFade(now) {
+      if (!start) start = now;
+      const progress = Math.min(1, (now - start) / (fadeTime * 1000));
+
+      setObjectOpacity(newObject, progress);
+      if (oldObject) setObjectOpacity(oldObject, 1 - progress);
+
+      if (progress < 1) {
+        requestAnimationFrame(animateFade);
+        return;
+      }
+
+      setObjectOpacity(newObject, 1);
+      if (oldObject && oldObject.parent) {
+        oldObject.parent.remove(oldObject);
+        disposeObject(oldObject);
+      }
+    }
+
+    requestAnimationFrame(animateFade);
+  }
+
+  function prepareMoonModel(model, targetSize, name) {
+    model.name = name;
+    normalizeModel(model, targetSize);
+    prepareModel(model);
+    enhanceImportedModel(model, renderer);
+    return model;
+  }
+
   const fallbackTexture = textureLoader.load(
     "https://raw.githubusercontent.com/mrdoob/three.js/dev/examples/textures/planets/moon_1024.jpg"
   );
@@ -773,35 +846,72 @@ function createMoon(gltfLoader, textureLoader, renderer) {
   fallbackTexture.anisotropy = renderer.capabilities.getMaxAnisotropy();
 
   const fallback = new THREE.Mesh(
-    new THREE.SphereGeometry(MOON_RADIUS, 160, 160),
+    new THREE.SphereGeometry(MOON_RADIUS, 96, 96),
     new THREE.MeshStandardMaterial({
       map: fallbackTexture,
       bumpMap: fallbackTexture,
       bumpScale: 0.018,
       roughness: 0.96,
-      metalness: 0
+      metalness: 0,
+      transparent: true,
+      opacity: 1
     })
   );
+  fallback.name = "MoonFallback";
   surface.add(fallback);
 
+  let activeMoon = fallback;
+
   gltfLoader.load(
-  MODEL_PATHS.moon,
-  (gltf) => {
-    const model = gltf.scene;
-    normalizeModel(model, MOON_RADIUS * 2);
-    prepareModel(model);
-    enhanceImportedModel(model, renderer);
-    // 隐藏 fallback
-    surface.children[0].visible = false;
-    surface.add(model);
-  },
-  (xhr) => {
-    updateLoaderProgress("Moon model", xhr.loaded, xhr.total);
-  },
-  (error) => {
-    console.warn("Moon GLB 加载失败:", error);
-  }
-);
+    MODEL_PATHS.moonSmall,
+    (gltf) => {
+      const smallMoon = prepareMoonModel(gltf.scene, MOON_RADIUS * 2, "MoonSmall");
+      fadeReplace(activeMoon, smallMoon, 0.65);
+      activeMoon = smallMoon;
+
+      gltfLoader.load(
+        MODEL_PATHS.moon8k,
+        (highGltf) => {
+          const highMoon = prepareMoonModel(highGltf.scene, MOON_RADIUS * 2, "Moon8K");
+          fadeReplace(activeMoon, highMoon, 0.9);
+          activeMoon = highMoon;
+          if (loaderDetail) loaderDetail.textContent = "Moon upgraded to 8K";
+
+          // 8K加载完成后，如果桌面端且用户开关 ENABLE_23K 为 true，则尝试加载 23K 模型
+          if (
+            ENABLE_23K &&
+            !isMobile &&
+            window.innerWidth > 768 &&
+            navigator.hardwareConcurrency > 4
+          ) {
+            gltfLoader.load(
+              MODEL_PATHS.moon23k,
+              (gltf23k) => {
+                const moon23k = prepareMoonModel(gltf23k.scene, MOON_RADIUS * 2, "Moon23K");
+                fadeReplace(activeMoon, moon23k, 1.0);
+                activeMoon = moon23k;
+                if (loaderDetail) loaderDetail.textContent = "Moon upgraded to 23K";
+              },
+              (xhr) => updateLoaderProgress("Moon 23K model", xhr.loaded, xhr.total),
+              (err) => console.warn("Moon 23K GLB 加载失败:", err)
+            );
+          }
+        },
+        (xhr) => {
+          updateLoaderProgress("Moon 8K model", xhr.loaded, xhr.total);
+        },
+        (error) => {
+          console.warn("Moon 8K GLB 加载失败:", error);
+        }
+      );
+    },
+    (xhr) => {
+      updateLoaderProgress("Moon small model", xhr.loaded, xhr.total);
+    },
+    (error) => {
+      console.warn("Moon small GLB 加载失败，继续使用 fallback:", error);
+    }
+  );
 
   const rim = new THREE.Mesh(
     new THREE.SphereGeometry(MOON_RADIUS * 1.055, 128, 128),
