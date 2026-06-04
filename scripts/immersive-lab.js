@@ -118,6 +118,8 @@ function boot() {
   const loader = new THREE.TextureLoader(loadingManager);
   const dracoLoader = new DRACOLoader();
   dracoLoader.setDecoderPath("https://cdn.jsdelivr.net/npm/three@0.164.1/examples/jsm/libs/draco/");
+  dracoLoader.setWorkerLimit(isMobile ? 2 : 4);
+  dracoLoader.preload();
 
   const gltfLoader = new GLTFLoader(loadingManager);
   gltfLoader.setDRACOLoader(dracoLoader);
