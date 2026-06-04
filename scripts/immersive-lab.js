@@ -11,16 +11,63 @@ const sceneTitleSub = document.querySelector("#sceneTitleSub");
 const motionToggle = document.querySelector("#motionToggle");
 const immersiveLoader = document.querySelector("#immersiveLoader");
 const loaderProgress = document.querySelector("#loaderProgress");
+const loaderDetail = document.querySelector("#loaderDetail");
 
-function updateLoaderProgress(label, loaded, total) {
+// --- Unified loader progress for multiple models ---
+const modelProgress = new Map();
+let loaderVisualPercent = 0;
+let loaderRenderPending = false;
+
+function renderCombinedLoaderProgress() {
+  loaderRenderPending = false;
   if (!loaderProgress) return;
 
-  if (total > 0) {
-    const percent = Math.min(99, Math.max(0, Math.round((loaded / total) * 100)));
-    loaderProgress.textContent = `${label}: ${percent}%`;
-  } else {
-    loaderProgress.textContent = `${label}: loading...`;
+  let knownLoaded = 0, knownTotal = 0;
+  let activeLabel = "Scene assets";
+  let activeLoaded = 0;
+
+  modelProgress.forEach((item) => {
+    if (item.total > 0) {
+      const safeLoaded = Math.min(item.loaded, item.total);
+      knownLoaded += safeLoaded;
+      knownTotal += item.total;
+      if (safeLoaded >= activeLoaded && safeLoaded < item.total) {
+        activeLoaded = safeLoaded;
+        activeLabel = item.label;
+      }
+    }
+  });
+
+  if (knownTotal > 0) {
+    const targetPercent = Math.min(99, Math.max(0, Math.round((knownLoaded / knownTotal) * 100)));
+    loaderVisualPercent = Math.max(loaderVisualPercent, targetPercent);
+    loaderProgress.textContent = `${loaderVisualPercent}%`;
+    if (loaderDetail) loaderDetail.textContent = `Loading ${activeLabel}`;
+    return;
   }
+
+  if (loaderDetail) loaderDetail.textContent = "Preparing scene assets";
+}
+
+function scheduleLoaderRender() {
+  if (loaderRenderPending) return;
+  loaderRenderPending = true;
+  window.requestAnimationFrame(renderCombinedLoaderProgress);
+}
+
+function updateLoaderProgress(label, loaded, total) {
+  modelProgress.set(label, {
+    label,
+    loaded: Number.isFinite(loaded) ? loaded : 0,
+    total: Number.isFinite(total) ? total : 0
+  });
+  scheduleLoaderRender();
+}
+
+function finishLoaderProgress() {
+  loaderVisualPercent = 100;
+  if (loaderProgress) loaderProgress.textContent = "100%";
+  if (loaderDetail) loaderDetail.textContent = "Scene ready";
 }
 
 const ISS_ALTITUDE_KM = 408;
@@ -76,7 +123,7 @@ function createSceneLoadingManager() {
   };
 
   manager.onLoad = () => {
-    if (loaderProgress) loaderProgress.textContent = "Scene assets: 100%";
+    finishLoaderProgress();
     window.setTimeout(openImmersiveDoor, 320);
   };
 
