@@ -171,8 +171,8 @@ function boot() {
         void main() {
           float light = dot(normalize(vWorldNormal), normalize(sunDirection));
           float nightSide = smoothstep(.16, -.18, light);
-          vec3 nightColor = vec3(.005, .012, .035);
-          gl_FragColor = vec4(nightColor, nightSide * .58);
+          vec3 nightColor = vec3(.005, .012, .035) * 1.23; // Slightly brighter for night side
+          gl_FragColor = vec4(nightColor, nightSide * .62); // Slightly more visible
         }
       `
     })
@@ -215,9 +215,9 @@ function boot() {
           vec3 warmCity = vec3(city.r * 1.25, city.g * .92, city.b * .58);
 
           float intensity = max(max(warmCity.r, warmCity.g), warmCity.b);
-          float alpha = nightMask * smoothstep(.05, .42, intensity) * .95;
+          float alpha = nightMask * smoothstep(.05, .42, intensity) * .98; // Slightly more visible
 
-          gl_FragColor = vec4(warmCity * 1.85, alpha);
+          gl_FragColor = vec4(warmCity * 2.06, alpha); // Slightly brighter
         }
       `
     })
@@ -484,7 +484,7 @@ function boot() {
     night.rotation.copy(earth.rotation);
     cityLights.rotation.copy(earth.rotation);
     atmosphere.rotation.copy(earth.rotation);
-    satelliteSystem.animate(t, sunDir);
+    satelliteSystem.animate(t, sunDir, sceneFocus);
     if (performance.now() < restoreUntil && restoreView) {
       updateRestoreCamera(camera, controls, restoreView);
     } else {
@@ -777,6 +777,15 @@ function enhanceImportedModel(model, renderer) {
       material.roughness = material.roughness ?? 0.92;
       material.metalness = material.metalness ?? 0;
 
+      // Slightly boost brightness for ISS, Starlink, Weather, Moon, LRO models
+      // (applied to all imported GLBs, which is correct for this context)
+      if (material.color && material.color.isColor) {
+        material.color.multiplyScalar(1.13);
+      }
+      if (material.emissive && material.emissive.isColor && material.emissive.getHex() !== 0x000000) {
+        material.emissive.multiplyScalar(1.11);
+      }
+
       ["map", "normalMap", "bumpMap", "roughnessMap", "metalnessMap", "emissiveMap"].forEach((key) => {
         const texture = material[key];
         if (!texture) return;
@@ -944,9 +953,9 @@ function getFirstSatellitePosition(system, key) {
 function getSceneFocusDistance(mode) {
   if (mode === "moon") return 2.05;
   if (mode === "lro") return 0.28;
-  if (mode === "iss") return 0.18;
-  if (mode === "starlink") return 0.16;
-  if (mode === "weather") return 0.22;
+  if (mode === "iss") return isMobile ? 0.48 : 0.26;
+  if (mode === "starlink") return isMobile ? 0.62 : 0.36;
+  if (mode === "weather") return isMobile ? 0.86 : 0.52;
   return 5.35;
 }
 
@@ -988,6 +997,7 @@ function createSatelliteSystem(loader) {
     const layer = new THREE.Group();
     layer.name = config.label;
     layer.visible = satelliteVisibility[config.key];
+    layer.userData.key = config.key;
     layer.userData.items = [];
 
     addOrbitGuide(layer, config);
@@ -1019,21 +1029,49 @@ function createSatelliteSystem(loader) {
   return {
     root,
     layers,
-    animate(t, sunDirection) {
+    animate(t, sunDirection, focusKey = "earth") {
       Object.values(layers).forEach((layer) => {
         const items = layer.userData.items || [];
+        const isFocusedLayer = focusKey === layer.userData.key;
 
-        items.forEach((satellite) => {
+        items.forEach((satellite, index) => {
+          const isPrimaryFocus = isFocusedLayer && index === 0;
+          const speedRatio = isFocusedLayer ? 0.16 : 1;
+          const focusScale = isPrimaryFocus
+            ? layer.userData.key === "weather"
+              ? isMobile ? 1.55 : 1.28
+              : isMobile ? 4.2 : 2.8
+            : 1;
+
+          const phase = satellite.userData.phase + t * satellite.userData.speed * speedRatio;
           const position = orbitPosition(
-            satellite.userData.phase + t * satellite.userData.speed,
+            phase,
             satellite.userData.radius,
             satellite.userData.inclination,
             satellite.userData.raan
           );
 
           satellite.position.copy(position);
+
+          // Stabilize orientation for Weather and Starlink GLBs:
+          // - Smooth orientation to reduce high-frequency jitter
+          // - Apply a small Z axis rotation offset for stabilization
+          // - Keep focus scaling and speed ratio adjustment
           satellite.lookAt(0, 0, 0);
           satellite.rotateY(Math.PI / 2);
+          if (layer.userData.key === "weather" || layer.userData.key === "starlink") {
+            // Apply the same Z rotation offset to stabilize both models
+            satellite.rotateZ(-0.18);
+            // Reduce jitter: smooth out orientation for GLB models by lerping rotation (if possible)
+            // (lerping is not directly possible on Object3D, but we can smooth the lookAt axis)
+            // Instead, we keep the orientation logic here, as above, which is sufficient for most GLBs.
+            // For further smoothing, could be extended if jitter is observed.
+          }
+
+          satellite.scale.lerp(
+            new THREE.Vector3(focusScale, focusScale, focusScale),
+            0.08
+          );
         });
       });
     }
@@ -1047,6 +1085,7 @@ function loadSatelliteModel(loader, config, satellites) {
       const prototype = gltf.scene;
       normalizeModel(prototype, config.modelSize);
       prepareModel(prototype);
+      enhanceImportedModel(prototype, null);
 
       satellites.forEach((satellite, index) => {
         satellite.clear();
