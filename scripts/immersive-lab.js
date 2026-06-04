@@ -12,6 +12,17 @@ const motionToggle = document.querySelector("#motionToggle");
 const immersiveLoader = document.querySelector("#immersiveLoader");
 const loaderProgress = document.querySelector("#loaderProgress");
 
+function updateLoaderProgress(label, loaded, total) {
+  if (!loaderProgress) return;
+
+  if (total > 0) {
+    const percent = Math.min(99, Math.max(0, Math.round((loaded / total) * 100)));
+    loaderProgress.textContent = `${label}: ${percent}%`;
+  } else {
+    loaderProgress.textContent = `${label}: loading...`;
+  }
+}
+
 const ISS_ALTITUDE_KM = 408;
 const EARTH_RADIUS = 1.72;
 const MOON_RADIUS_RATIO = 0.273;
@@ -57,20 +68,20 @@ function createSceneLoadingManager() {
   const manager = new THREE.LoadingManager();
 
   manager.onStart = () => {
-    if (loaderProgress) loaderProgress.textContent = "0%";
+    if (loaderProgress) loaderProgress.textContent = "Loading: 0%";
   };
 
   manager.onProgress = (url, loaded, total) => {
-    const percent = total > 0 ? Math.round((loaded / total) * 100) : 0;
-    if (loaderProgress) loaderProgress.textContent = `${percent}%`;
+    updateLoaderProgress("Scene assets", loaded, total);
   };
 
   manager.onLoad = () => {
+    if (loaderProgress) loaderProgress.textContent = "Scene assets: 100%";
     window.setTimeout(openImmersiveDoor, 320);
   };
 
-  manager.onError = () => {
-    window.setTimeout(openImmersiveDoor, 520);
+  manager.onError = (url) => {
+    console.warn("加载失败: ", url);
   };
 
   return manager;
@@ -402,7 +413,9 @@ function boot() {
       issSolarPanels.push(...collectSolarPanelMeshes(issModel));
       issAnchor.add(issModel);
     },
-    undefined,
+    (xhr) => {
+      updateLoaderProgress("ISS model", xhr.loaded, xhr.total);
+    },
     (error) => {
       console.error("Failed to load ISS GLB model:", error);
     }
@@ -522,17 +535,28 @@ function createLunarOrbiterSystem(gltfLoader) {
 
   root.add(orbit, orbiter);
 
+  // Orbital elements for LRO (approx): semi-major axis = 0.82 (relative), inclination = 72 deg, period ~ 2h (7200s)
+  const LRO_ORBITAL_PERIOD_S = 7200; // 2 hours
+  const LRO_INCLINATION_RAD = THREE.MathUtils.degToRad(72);
+  const LRO_RAAN_RAD = 0; // for demonstration, can be set for precession
+  const LRO_EPOCH = Date.UTC(2024, 0, 1, 0, 0, 0); // arbitrary reference epoch
+
+  function getLroPhase(now) {
+    const elapsed = (now.getTime() - LRO_EPOCH) / 1000;
+    return ((elapsed / LRO_ORBITAL_PERIOD_S) * Math.PI * 2) % (Math.PI * 2);
+  }
+
   return {
     root,
     orbiter,
     animate(t, sunDirection, isMoonFocus) {
-      const phase = t * 0.055;
-      const position = lunarOrbitPoint(phase, 0.82, THREE.MathUtils.degToRad(72));
-
+      // Use real UTC-based phase
+      const now = new Date();
+      const phase = getLroPhase(now);
+      const position = lunarOrbitPoint(phase, 0.82, LRO_INCLINATION_RAD);
       orbiter.position.copy(position);
       orbiter.lookAt(0, 0, 0);
       orbiter.rotateY(Math.PI * 0.5);
-
       orbit.material.opacity = isMoonFocus ? 0.20 : 0.08;
       orbiter.scale.setScalar(isMoonFocus ? 1.08 : 0.92);
     }
@@ -554,7 +578,9 @@ function createLroStyleOrbiter(gltfLoader) {
       group.add(model);
       group.visible = true;
     },
-    undefined,
+    (xhr) => {
+      updateLoaderProgress("LRO model", xhr.loaded, xhr.total);
+    },
     (error) => {
       console.warn("LRO GLB failed. Put the real model at models/glb/lro.glb", error);
       group.visible = false;
@@ -712,20 +738,23 @@ function createMoon(gltfLoader, textureLoader, renderer) {
   surface.add(fallback);
 
   gltfLoader.load(
-    MODEL_PATHS.moon,
-    (gltf) => {
-      const model = gltf.scene;
-      normalizeModel(model, MOON_RADIUS * 2);
-      prepareModel(model);
-      enhanceImportedModel(model, renderer);
-      fallback.visible = false;
-      surface.add(model);
-    },
-    undefined,
-    (error) => {
-      console.warn("Moon GLB failed. Put the model at models/glb/moon-lro-8k.glb", error);
-    }
-  );
+  MODEL_PATHS.moon,
+  (gltf) => {
+    const model = gltf.scene;
+    normalizeModel(model, MOON_RADIUS * 2);
+    prepareModel(model);
+    enhanceImportedModel(model, renderer);
+    // 隐藏 fallback
+    surface.children[0].visible = false;
+    surface.add(model);
+  },
+  (xhr) => {
+    updateLoaderProgress("Moon model", xhr.loaded, xhr.total);
+  },
+  (error) => {
+    console.warn("Moon GLB 加载失败:", error);
+  }
+);
 
   const rim = new THREE.Mesh(
     new THREE.SphereGeometry(MOON_RADIUS * 1.055, 128, 128),
@@ -966,6 +995,18 @@ function createSatelliteSystem(loader) {
   const root = new THREE.Group();
   const layers = {};
 
+  // Orbital parameters for UTC-synchronized orbits
+  // Starlink example: period ~ 95 min, inclination 53 deg, 6 planes
+  // Weather (e.g. GOES): geostationary, period 24h, inclination 0 deg
+  // All times in seconds
+  const STARLINK_PERIOD_S = 5700; // 95 min
+  const STARLINK_INCLINATION_RAD = THREE.MathUtils.degToRad(53);
+  const STARLINK_PLANES = 6;
+  const STARLINK_EPOCH = Date.UTC(2024, 0, 1, 0, 0, 0);
+  const WEATHER_PERIOD_S = 86400; // 24h
+  const WEATHER_INCLINATION_RAD = 0;
+  const WEATHER_EPOCH = Date.UTC(2024, 0, 1, 0, 0, 0);
+
   const configs = [
     {
       key: "starlink",
@@ -973,12 +1014,15 @@ function createSatelliteSystem(loader) {
       count: SATELLITE_CONFIG_OVERRIDES.starlink.count,
       radius: SATELLITE_CONFIG_OVERRIDES.starlink.radius,
       inclination: 53,
-      speed: 0.55,
+      speed: 0.55, // kept for fallback
       color: "#dbeafe",
       size: SATELLITE_CONFIG_OVERRIDES.starlink.modelSize,
-      planes: 6,
+      planes: STARLINK_PLANES,
       modelPath: MODEL_PATHS.starlink,
-      modelSize: SATELLITE_CONFIG_OVERRIDES.starlink.modelSize * 17 // keep same ratio as before
+      modelSize: SATELLITE_CONFIG_OVERRIDES.starlink.modelSize * 17,
+      period: STARLINK_PERIOD_S,
+      inclinationRad: STARLINK_INCLINATION_RAD,
+      epoch: STARLINK_EPOCH
     },
     {
       key: "weather",
@@ -986,12 +1030,15 @@ function createSatelliteSystem(loader) {
       count: SATELLITE_CONFIG_OVERRIDES.weather.count,
       radius: SATELLITE_CONFIG_OVERRIDES.weather.radius,
       inclination: 0,
-      speed: 0.032,
+      speed: 0.032, // kept for fallback
       color: "#67e8f9",
-      size: SATELLITE_CONFIG_OVERRIDES.weather.modelSize / 2.7, // keep similar ratio
+      size: SATELLITE_CONFIG_OVERRIDES.weather.modelSize / 2.7,
       planes: 1,
       modelPath: MODEL_PATHS.weather,
-      modelSize: SATELLITE_CONFIG_OVERRIDES.weather.modelSize
+      modelSize: SATELLITE_CONFIG_OVERRIDES.weather.modelSize,
+      period: WEATHER_PERIOD_S,
+      inclinationRad: WEATHER_INCLINATION_RAD,
+      epoch: WEATHER_EPOCH
     }
   ];
 
@@ -1006,16 +1053,19 @@ function createSatelliteSystem(loader) {
 
     for (let i = 0; i < config.count; i += 1) {
       const plane = i % config.planes;
-      const phase = (i / config.count) * Math.PI * 2;
+      const satIndexInPlane = Math.floor(i / config.planes);
+      const phaseOffset = (satIndexInPlane / Math.ceil(config.count / config.planes)) * Math.PI * 2;
       const raan = (plane / config.planes) * Math.PI * 2;
       const satellite = createFallbackSatellite(config.color, config.size);
 
       satellite.userData = {
         radius: config.radius,
-        inclination: THREE.MathUtils.degToRad(config.inclination),
-        phase,
+        inclination: config.inclinationRad,
         raan,
-        speed: config.speed * (0.88 + Math.random() * 0.24),
+        phaseOffset,
+        period: config.period,
+        epoch: config.epoch,
+        speed: config.speed * (0.88 + Math.random() * 0.24), // fallback only
         solarPanels: []
       };
 
@@ -1028,48 +1078,42 @@ function createSatelliteSystem(loader) {
     loadSatelliteModel(loader, config, layer.userData.items);
   });
 
+  function getSatellitePhase(sat, now) {
+    // UTC-based phase
+    const elapsed = (now.getTime() - sat.epoch) / 1000;
+    // phase increases with time, plus offset for satellite's position in its plane
+    return ((elapsed / sat.period) * Math.PI * 2 + sat.phaseOffset) % (Math.PI * 2);
+  }
+
   return {
     root,
     layers,
     animate(t, sunDirection, focusKey = "earth") {
+      const now = new Date();
       Object.values(layers).forEach((layer) => {
         const items = layer.userData.items || [];
         const isFocusedLayer = focusKey === layer.userData.key;
-
         items.forEach((satellite, index) => {
           const isPrimaryFocus = isFocusedLayer && index === 0;
-          const speedRatio = isFocusedLayer ? 0.16 : 1;
           const focusScale = isPrimaryFocus
             ? layer.userData.key === "weather"
               ? isMobile ? 1.55 : 1.28
               : isMobile ? 4.2 : 2.8
             : 1;
-
-          const phase = satellite.userData.phase + t * satellite.userData.speed * speedRatio;
+          // Calculate UTC-based phase
+          const phase = getSatellitePhase(satellite.userData, now);
           const position = orbitPosition(
             phase,
             satellite.userData.radius,
             satellite.userData.inclination,
             satellite.userData.raan
           );
-
           satellite.position.copy(position);
-
-          // Stabilize orientation for Weather and Starlink GLBs:
-          // - Smooth orientation to reduce high-frequency jitter
-          // - Apply a small Z axis rotation offset for stabilization
-          // - Keep focus scaling and speed ratio adjustment
           satellite.lookAt(0, 0, 0);
           satellite.rotateY(Math.PI / 2);
           if (layer.userData.key === "weather" || layer.userData.key === "starlink") {
-            // Apply the same Z rotation offset to stabilize both models
             satellite.rotateZ(-0.18);
-            // Reduce jitter: smooth out orientation for GLB models by lerping rotation (if possible)
-            // (lerping is not directly possible on Object3D, but we can smooth the lookAt axis)
-            // Instead, we keep the orientation logic here, as above, which is sufficient for most GLBs.
-            // For further smoothing, could be extended if jitter is observed.
           }
-
           satellite.scale.lerp(
             new THREE.Vector3(focusScale, focusScale, focusScale),
             0.08
@@ -1097,7 +1141,9 @@ function loadSatelliteModel(loader, config, satellites) {
         satellite.add(clone);
       });
     },
-    undefined,
+    (xhr) => {
+      updateLoaderProgress(`${config.label} model`, xhr.loaded, xhr.total);
+    },
     (error) => console.warn(`${config.label} model failed, using fallback:`, error)
   );
 }
@@ -1179,15 +1225,19 @@ function bindSatelliteToggles(system) {
 }
 
 
+// Compute ISS state based on UTC and real orbital elements (approximation)
 function computeIssState(date) {
+  // ISS orbital elements (approximate, TLE-independent)
+  // Epoch: ISS_EPOCH_MS, period: ISS_ORBIT_PERIOD_MIN (min), inclination: ISS_INCLINATION_DEG
+  // Reference: https://www.celestrak.com/NORAD/elements/stations.txt
+  // We'll use a simple SGP-like propagation for demo
   const elapsedMin = (date.getTime() - ISS_EPOCH_MS) / 60000;
   const phase = (elapsedMin / ISS_ORBIT_PERIOD_MIN) * Math.PI * 2;
-  const earthRotation = (elapsedMin / 1436.07) * 360;
-
-  const lat = Math.sin(phase) * ISS_INCLINATION_DEG;
-  const rawLon = THREE.MathUtils.radToDeg(Math.atan2(Math.sin(phase), Math.cos(phase))) - earthRotation;
-  const lon = normalizeLongitude(rawLon);
-
+  // Calculate latitude (inclined sinusoidal)
+  const lat = Math.asin(Math.sin(ISS_INCLINATION_DEG * Math.PI / 180) * Math.sin(phase)) * (180 / Math.PI);
+  // Longitude: account for Earth's rotation
+  const earthRotationDeg = (elapsedMin / 1440) * 360; // 1 sidereal day = 23h 56m ~ 1440 min
+  const lon = normalizeLongitude((THREE.MathUtils.radToDeg(phase) - earthRotationDeg) % 360 - 180);
   return { lat, lon };
 }
 
