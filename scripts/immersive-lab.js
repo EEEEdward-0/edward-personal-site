@@ -85,6 +85,7 @@ const LUNAR_ORBIT_VISUAL_SPEED = 90;
 const GATEWAY_VISUAL_SPEED = 7200;
 const SUN_DISTANCE = 30;
 const SUN_BASE_SIZE = 1.05;
+const EARTH_OVERVIEW_TARGET = new THREE.Vector3(1.28, 0.18, -0.08);
 
 // --- Visual scaling factor for ISS and Gateway ---
 const VISUAL_FACTOR = 18000; // Shared visual scale for real-size ISS/Gateway proportions.
@@ -181,15 +182,17 @@ function boot() {
   scene.background = null;
 
   const camera = new THREE.PerspectiveCamera(36, 1, 0.01, 100);
-  camera.position.set(0.62, 1.05, 5.75);
+  camera.position.set(1.22, 0.96, 6.18);
 
   const controls = new OrbitControls(camera, canvas);
+  controls.target.copy(EARTH_OVERVIEW_TARGET);
   controls.enableDamping = true;
   controls.enablePan = false;
   controls.enableZoom = true;
   controls.zoomSpeed = 1.15;
   controls.minDistance = 0.08;
   controls.maxDistance = 9.2;
+  controls.update();
 
   const loadingManager = createSceneLoadingManager();
   const loader = new THREE.TextureLoader(loadingManager);
@@ -1319,7 +1322,7 @@ function getSceneFocusTarget(mode, issAnchor, satelliteSystem, lunarSystem, gate
     return getFirstSatellitePosition(satelliteSystem, "weather");
   }
 
-  return new THREE.Vector3(0, 0, 0);
+  return EARTH_OVERVIEW_TARGET.clone();
 }
 
 function getFirstSatellitePosition(system, key) {
@@ -1339,7 +1342,7 @@ function getSceneFocusDistance(mode) {
   if (mode === "iss") return isMobile ? 0.48 : 0.26;
   if (mode === "starlink") return isMobile ? 0.62 : 0.36;
   if (mode === "weather") return isMobile ? 0.86 : 0.52;
-  return 5.35;
+  return 5.75;
 }
 
 
