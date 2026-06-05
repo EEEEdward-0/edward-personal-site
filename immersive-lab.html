@@ -3,8 +3,8 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>ISS Earth View</title>
-  <link rel="stylesheet" href="./styles/common.css?v=site-style-14" />
+  <title>沉浸式地月轨道场景</title>
+  <link rel="stylesheet" href="./styles/common.css?v=site-style-16" />
   <script type="importmap">
     {
       "imports": {
@@ -21,36 +21,44 @@
     <section class="iss-hero">
       <div class="iss-copy">
         <p class="iss-kicker">03 / IMMERSIVE EARTH VIEW</p>
-        <h1 class="scene-title"><span id="sceneTitleMain">Earth</span><br><span id="sceneTitleSub">Observer</span></h1>
+        <h1 class="scene-title"><span id="sceneTitleMain">Earth</span><br><span id="sceneTitleSub">View</span></h1>
         <p>基于 NASA 地球影像与 ISS 实时经纬度，模拟从国际空间站俯瞰的沉浸式视角。</p>
       </div>
 
-      <canvas id="earthCanvas" aria-label="Immersive Earth scene"></canvas>
+      <canvas id="earthCanvas" aria-label="沉浸式地球场景"></canvas>
 
       <div class="immersive-loader" id="immersiveLoader" aria-hidden="true">
         <div class="loader-door loader-door-top"></div>
         <div class="loader-door loader-door-bottom"></div>
         <div class="loader-copy">
-          <span id="loaderStage">Loading orbital scene</span>
+          <span id="loaderStage">正在加载轨道场景</span>
           <strong id="loaderProgress">0%</strong>
-          <small id="loaderDetail">Preparing scene assets</small>
+          <small id="loaderDetail">正在准备场景资源</small>
         </div>
       </div>
 
       <div class="scene-ui" id="issStage">
-        <div class="satellite-switches" aria-label="Satellite layer switches">
-          <button type="button" class="is-active" data-sat-toggle="iss">ISS</button>
-          <button type="button" class="is-active" data-sat-toggle="starlink">Starlink</button>
-          <button type="button" class="is-active" data-sat-toggle="weather">Weather</button>
-          <button type="button" class="motion-toggle" id="motionToggle">Motion View</button>
-        </div>
+        <button class="scene-menu-toggle" type="button" aria-label="展开场景控制" aria-expanded="false" aria-controls="sceneControls">
+          <span></span>
+          <span></span>
+          <span></span>
+        </button>
 
-        <div class="scene-inspector" aria-label="Model inspect controls">
-          <button type="button" data-scene-focus="iss">ISS Detail</button>
-          <button type="button" data-scene-focus="starlink">Starlink Detail</button>
-          <button type="button" data-scene-focus="weather">Weather Detail</button>
-          <button type="button" data-scene-focus="lro">LRO Detail</button>
-          <button type="button" data-scene-focus="gateway">Gateway Detail</button>
+        <div class="scene-control-panel" id="sceneControls" hidden>
+          <div class="satellite-switches" aria-label="卫星图层开关">
+            <button type="button" class="is-active" data-sat-toggle="iss">ISS</button>
+            <button type="button" class="is-active" data-sat-toggle="starlink">Starlink</button>
+            <button type="button" class="is-active" data-sat-toggle="weather">Weather</button>
+            <button type="button" class="motion-toggle" id="motionToggle">运动视角</button>
+          </div>
+
+          <div class="scene-inspector" aria-label="模型查看控制">
+            <button type="button" data-scene-focus="iss">ISS 细节</button>
+            <button type="button" data-scene-focus="starlink">Starlink 细节</button>
+            <button type="button" data-scene-focus="weather">Weather 细节</button>
+            <button type="button" data-scene-focus="lro">LRO 细节</button>
+            <button type="button" data-scene-focus="gateway">Gateway 细节</button>
+          </div>
         </div>
       </div>
     </section>
@@ -64,6 +72,11 @@
       immersiveStyle.rel = "stylesheet";
       immersiveStyle.href = `./styles/immersive-lab.css?v=${assetVersion}`;
       document.head.appendChild(immersiveStyle);
+
+      const i18nScript = document.createElement("script");
+      i18nScript.type = "module";
+      i18nScript.src = "./scripts/i18n.js?v=site-style-16";
+      document.body.appendChild(i18nScript);
 
       const immersiveScript = document.createElement("script");
       immersiveScript.type = "module";

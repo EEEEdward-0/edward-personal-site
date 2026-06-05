@@ -430,7 +430,7 @@ function renderBaseInfo() {
 
 function setLoadingState(isLoading) {
     trigger.classList.toggle("is-loading", isLoading);
-    trigger.textContent = isLoading ? "Checking" : "Run Test";
+    trigger.textContent = isLoading ? "检测中" : "开始测试";
 }
 
 function showUnsupported() {
@@ -453,7 +453,7 @@ function setVisionLoading(isLoading) {
     if (!imageSelect) return;
 
     imageSelect.classList.toggle("is-loading", isLoading);
-    imageSelect.textContent = isLoading ? "Analyzing" : "Upload Image";
+    imageSelect.textContent = isLoading ? "识别中" : "上传图片";
 }
 
 async function loadImageClassifier() {
@@ -594,10 +594,10 @@ async function runRuntimeProbe() {
     setLoadingState(true);
     badge.classList.remove("is-unsupported");
 
-    setText(badge, "Checking");
-    setText(webgpuStatus, "Checking");
-    setText(gpuStatus, "Checking");
-    setText(runtimeChoice, "Checking");
+    setText(badge, "检测中");
+    setText(webgpuStatus, "检测中");
+    setText(gpuStatus, "检测中");
+    setText(runtimeChoice, "检测中");
 
     const hasWebGPU = "gpu" in navigator;
 
@@ -702,8 +702,8 @@ exportCsv?.addEventListener("click", exportHistoryAsCsv);
 exportExcel?.addEventListener("click", exportHistoryAsExcel);
 document.querySelector("#cameraLaunch")?.addEventListener("click", () => {
     window.open(
-        "./camera-emotion.html",
-        "cameraEmotionWindow",
+        "./edge-ops-console.html",
+        "edgeOpsConsoleWindow",
         "width=1280,height=860,noopener,noreferrer"
     );
 });

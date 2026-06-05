@@ -1454,3 +1454,102 @@
     background: linear-gradient(180deg, rgba(0, 113, 227, 0.16), rgba(0, 113, 227, 0.48)) !important;
   }
 }
+
+/* Apple-style button refinement: compact rectangular controls, not pill-heavy CTAs. */
+.lab-page .language-info-toggle {
+  border-radius: 11px;
+  box-shadow:
+    0 10px 24px rgba(0, 113, 227, 0.16),
+    inset 0 1px 0 rgba(255, 255, 255, 0.24);
+}
+
+.lab-page .edge-demo-link {
+  min-height: 44px;
+  border-radius: 12px;
+  padding: 10px 14px;
+  box-shadow: 0 12px 28px rgba(0, 0, 0, 0.1);
+}
+
+.lab-page .ui-arch-run,
+.lab-page .edge-flow-item .ui-architecture-demo button {
+  border-radius: 10px !important;
+}
+
+.lab-page .ui-arch-run {
+  display: inline-flex !important;
+  min-height: 34px !important;
+  align-items: center !important;
+  justify-content: center !important;
+  padding: 0 12px !important;
+  border: 1px solid rgba(0, 113, 227, 0.18) !important;
+  background: rgba(255, 255, 255, 0.88) !important;
+  color: var(--blue, #0071e3) !important;
+  font-size: 13px !important;
+  font-weight: 850 !important;
+  text-decoration: none !important;
+}
+
+/* 这是 Lab 可运行工具的统一控件样式，避免按钮和输出区各自成风格。 */
+.lab-page .edge-tool {
+  display: grid;
+  gap: 10px;
+  margin-top: 20px;
+}
+
+.lab-page .edge-tool-button {
+  width: min(100%, 220px);
+  min-height: 42px;
+  padding: 0 14px;
+  border: 1px solid rgba(0, 113, 227, 0.2);
+  border-radius: 12px;
+  background:
+    linear-gradient(135deg, rgba(255, 255, 255, 0.92), rgba(245, 249, 255, 0.72)),
+    rgba(255, 255, 255, 0.72);
+  box-shadow:
+    0 14px 28px rgba(0, 113, 227, 0.12),
+    inset 0 1px 0 rgba(255, 255, 255, 0.88);
+  color: var(--blue, #0071e3);
+  cursor: pointer;
+  font-size: 13px;
+  font-weight: 850;
+  transition:
+    transform 180ms ease,
+    border-color 180ms ease,
+    box-shadow 180ms ease,
+    background 180ms ease;
+}
+
+.lab-page .edge-tool-button:hover {
+  border-color: rgba(0, 113, 227, 0.36);
+  box-shadow:
+    0 18px 34px rgba(0, 113, 227, 0.16),
+    inset 0 1px 0 rgba(255, 255, 255, 0.96);
+  transform: translateY(-1px);
+}
+
+.lab-page .edge-tool-button:active {
+  transform: translateY(1px) scale(0.985);
+}
+
+.lab-page .edge-tool-output {
+  display: block;
+  min-height: 72px;
+  padding: 14px 16px;
+  border: 1px solid rgba(29, 29, 31, 0.08);
+  border-radius: 14px;
+  background: rgba(255, 255, 255, 0.62);
+  color: rgba(29, 29, 31, 0.68);
+  font-size: 13px;
+  font-weight: 700;
+  line-height: 1.6;
+  transition:
+    border-color 220ms ease,
+    box-shadow 220ms ease,
+    color 220ms ease;
+}
+
+.lab-page .edge-tool-output.is-updated {
+  border-color: rgba(0, 113, 227, 0.28);
+  box-shadow: 0 12px 28px rgba(0, 113, 227, 0.1);
+  color: rgba(29, 29, 31, 0.82);
+}

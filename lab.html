@@ -1,14 +1,14 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="zh-CN">
 
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <meta name="description" content="Edward Zheng 的技术札记，记录运维、数据、自动化与可维护系统的实践方法。" />
-  <title>Edward's Lab | Notes & Small Systems</title>
+  <title>Edward's Lab | Notes &amp; Small Systems</title>
   <link rel="icon" href="assets/favicon.svg" type="image/svg+xml" />
-  <link rel="stylesheet" href="./styles/home.css?v=site-style-14">
-  <link rel="stylesheet" href="./styles/lab.css?v=site-style-14">
+  <link rel="stylesheet" href="./styles/home.css?v=site-style-16">
+  <link rel="stylesheet" href="./styles/lab.css?v=site-style-16">
 </head>
 
 <body class="lab-page">
@@ -32,7 +32,7 @@
         <button class="contact-toggle" type="button" aria-expanded="false" aria-controls="contact-popover">联系</button>
       </nav>
       <div class="contact-popover" id="contact-popover" data-glass hidden>
-        <a class="mail-card" href="mailto:jueslibrary@gamil.com">
+        <a class="mail-card" href="mailto:jueslibrary@gmail.com">
           <span class="mail-logo" aria-hidden="true">
             <svg viewBox="0 0 48 48">
               <path fill="#ea4335" d="M6 14.4 24 27.8l18-13.4v22.2A3.4 3.4 0 0 1 38.6 40H9.4A3.4 3.4 0 0 1 6 36.6Z" />
@@ -43,7 +43,7 @@
           </span>
           <span>
             <strong>Google Mail</strong>
-            <small>jueslibrary@gamil.com</small>
+            <small>jueslibrary@gmail.com</small>
           </span>
         </a>
         <a class="mail-card" href="https://www.linkedin.com/in/%E9%83%91-%E5%8D%93%E8%B1%AA-880251353/" target="_blank" rel="noreferrer">
@@ -67,9 +67,9 @@
       </p>
       <section class="lab-hero reveal">
         <p class="eyebrow">Lab Notes</p>
-        <h1>把零散经验，整理成可以复用的小系统。</h1>
+        <h1>把实践经验，整理成可复用的小系统。</h1>
         <p>
-          这里不是另一份简历，而是一个技术工作台：记录排障、自动化、数据处理、家庭实验室和无障碍体验里的方法论。
+          这里记录排障、自动化、数据处理和前端实验。每个模块都尽量讲清楚问题、方法和结果。
         </p>
       </section>
 
@@ -90,21 +90,20 @@
 
       <section class="edge-architecture reveal" aria-labelledby="edge-architecture-title">
         <div class="edge-architecture-head">
-          <p class="eyebrow">Browser-native AI Runtime</p>
-          <h2 id="edge-architecture-title">浏览器原生 AI 计算架构</h2>
+          <p class="eyebrow">Local AI Runtime</p>
+          <h2 id="edge-architecture-title">在浏览器里运行 AI 能力</h2>
           <p>
-            这个模块展示的不是传统服务器调用式 AI，而是更贴近浏览器原生计算的端侧智能思路：
-            通过 WebGPU、Built-in AI API 与前端运行时能力检测，把模型推理、交互反馈和可视化表达放回用户设备侧。
+            这个模块用于观察浏览器是否具备本地 AI 运行条件，包括 WebGPU、内置 AI 接口和前端交互能力。
+            它更关注隐私边界、响应速度和可视化表达。
           </p>
         </div>
 
         <div class="edge-architecture-body">
           <aside class="edge-architecture-aside">
             <span class="edge-architecture-label">System View</span>
-            <strong>On-device intelligence, GPU-native interface, portable service thinking.</strong>
+            <strong>本地运行、清晰边界、可迁移的服务思路。</strong>
             <p>
-              该 section 强调浏览器内执行、隐私边界、复杂 UI 架构和沉浸式 3D 渲染能力。
-              它不读取访客本机进程，也不依赖 localhost 服务。
+              这个区域只展示浏览器能力和页面交互，不读取访客本机进程，也不依赖本地服务。
             </p>
           </aside>
 
@@ -115,9 +114,9 @@
                 <div class="dot-inner"></div>
               </div>
               <span>01 / Runtime Layer</span>
-              <h3>Browser-native AI Runtime</h3>
+              <h3>浏览器运行能力检测</h3>
               <p>
-                检测 WebGPU、Chrome Built-in AI API 与端侧推理准备状态，判断浏览器是否具备本地模型执行、GPU 加速和隐私友好的 AI 计算能力。
+                检测 WebGPU、Chrome 内置 AI 接口和端侧推理准备状态，判断当前浏览器是否适合运行本地 AI 功能。
               </p>
               <div class="edge-tags">
                 <b>WebGPU</b>
@@ -125,8 +124,8 @@
                 <b>On-device inference</b>
               </div>
               <a class="edge-demo-link" href="runtime-probe.html" aria-label="打开浏览器原生 AI 运行测试页面">
-                <span>Open Runtime Test</span>
-                <small>Browser-native AI demo</small>
+                <span>打开运行测试</span>
+                <small>浏览器 AI 能力检测</small>
               </a>
             </section>
 
@@ -135,39 +134,39 @@
                 <div class="dot-outer"></div>
                 <div class="dot-inner"></div>
               </div>
-              <span>02 / Interface Layer</span>
-              <h3>Complex UI Architecture</h3>
+              <span>02 / Ops Layer</span>
+              <h3>自动化运维诊断台</h3>
               <p>
-                以 camera-emotion 为例，把摄像头输入、情绪识别、状态管理和图表渲染拆成清晰的数据流，展示复杂 AI 界面的组件协作方式。
+                使用 Web Components 和前端状态管理模拟服务巡检，把指标采集、风险判断和排障建议整理成可复用工具。
               </p>
               <div class="edge-tags">
-                <b>React</b>
-                <b>Vue</b>
-                <b>Angular</b>
-                <b>State flow</b>
+                <b>Web Components</b>
+                <b>ES Modules</b>
+                <b>Runbook</b>
+                <b>Observability</b>
               </div>
               <div class="ui-architecture-demo" aria-label="复杂 UI 状态流演示">
                 <div class="ui-arch-flow" aria-hidden="true">
-                  <span class="ui-arch-node is-active" data-ui-arch-step="camera">Camera Input</span>
+                  <span class="ui-arch-node is-active" data-ui-arch-step="metrics">Metrics</span>
                   <i></i>
-                  <span class="ui-arch-node" data-ui-arch-step="engine">Emotion Engine</span>
+                  <span class="ui-arch-node" data-ui-arch-step="risk">Risk Engine</span>
                   <i></i>
-                  <span class="ui-arch-node" data-ui-arch-step="store">Reactive Store</span>
+                  <span class="ui-arch-node" data-ui-arch-step="store">State Store</span>
                   <i></i>
-                  <span class="ui-arch-node" data-ui-arch-step="charts">Timeline &amp; Charts</span>
+                  <span class="ui-arch-node" data-ui-arch-step="runbook">Runbook</span>
                 </div>
                 <div class="ui-arch-console">
                   <div class="ui-arch-console-head">
-                    <span>Event Bus</span>
-                    <button class="ui-arch-run" type="button" data-ui-arch-run>Listen Live</button>
+                    <span>Ops Event Bus</span>
+                    <a class="ui-arch-run" href="edge-ops-console.html">打开诊断台</a>
                   </div>
                   <div class="ui-arch-log" data-ui-arch-log>
-                    <span>[ready] waiting for camera-emotion events</span>
+                    <span>[ready] waiting for ops-console diagnostics</span>
                   </div>
                   <pre class="ui-arch-state" data-ui-arch-state>{
   "status": "listening-ready",
-  "source": "camera-emotion.html",
-  "transport": "BroadcastChannel + localStorage"
+  "source": "edge-ops-console.html",
+  "architecture": "Web Components + ES Modules"
 }</pre>
                 </div>
               </div>
@@ -179,9 +178,9 @@
                 <div class="dot-inner"></div>
               </div>
               <span>03 / Rendering Layer</span>
-              <h3>Immersive 3D Scene</h3>
+              <h3>沉浸式 3D 场景</h3>
               <p>
-                使用 Three.js 或 Babylon.js 构建 GPU 加速的沉浸式 3D 场景，表达模型状态、数据流动、节点关系和实时交互反馈，而不是停留在静态卡片展示。
+                使用 Three.js 构建 GPU 加速的 3D 场景，用轨道、节点和实时反馈表达复杂系统关系。
               </p>
               <div class="edge-render-visual" aria-hidden="true">
                 <i></i><i></i><i></i><i></i><i></i>
@@ -193,7 +192,7 @@
               </div>
 
               <a class="edge-demo-link immersive-entry" href="immersive-lab.html" aria-label="打开沉浸式地月轨道页面">
-                <span>Open Immersive Earth</span>
+                <span>打开地月场景</span>
                 <small>Earth · Moon · ISS · LRO</small>
               </a>
             </section>
@@ -204,14 +203,20 @@
                 <div class="dot-inner"></div>
               </div>
               <span>04 / Edge Boundary</span>
-              <h3>Worker-powered API Boundary</h3>
+              <h3>清晰的 API 边界</h3>
               <p>
-                使用 Cloudflare Worker 隔离 GitHub Token、缓存聚合和外部 API 访问，让前端只处理展示、交互和端侧能力检测，保持前后端责任边界清晰。
+                使用 Cloudflare Worker 隔离 Token、缓存和外部 API 访问，让前端专注展示、交互和能力检测。
               </p>
               <div class="edge-tags">
                 <b>Cloudflare Worker</b>
                 <b>Token isolation</b>
                 <b>Cache strategy</b>
+              </div>
+              <div class="edge-tool" data-edge-boundary-tool>
+                <button class="edge-tool-button" type="button" data-run-boundary>运行边界检查</button>
+                <output class="edge-tool-output" data-boundary-output aria-live="polite">
+                  点击后检查页面来源、缓存响应和前后端职责边界。
+                </output>
               </div>
             </section>
 
@@ -231,26 +236,13 @@
                 <b>Context control</b>
                 <b>Error handling</b>
               </div>
+              <div class="edge-tool edge-tool-wide" data-system-layer-tool>
+                <button class="edge-tool-button" type="button" data-run-system-layer>运行并发任务演示</button>
+                <output class="edge-tool-output" data-system-output aria-live="polite">
+                  点击后模拟 Go 风格的并发任务、超时取消和错误聚合。
+                </output>
+              </div>
             </section>
-          </div>
-        </div>
-
-        <div class="edge-runtime-strip" aria-label="浏览器端 AI 运行能力检测">
-          <div>
-            <span>WebGPU</span>
-            <strong data-edge-webgpu>Checking...</strong>
-          </div>
-          <div>
-            <span>Built-in AI API</span>
-            <strong data-edge-ai-api>Checking...</strong>
-          </div>
-          <div>
-            <span>Runtime Mode</span>
-            <strong>Browser-side</strong>
-          </div>
-          <div>
-            <span>Privacy Boundary</span>
-            <strong>No local process access</strong>
           </div>
         </div>
       </section>
@@ -285,7 +277,9 @@
     </footer>
   </div>
 
-  <script src="./scripts/home.js"></script>
+  <script type="module" src="./scripts/i18n.js?v=site-style-16"></script>
+  <script type="module" src="./scripts/lab-systems.js?v=site-style-16"></script>
+  <script src="./scripts/home.js?v=site-style-16"></script>
 <div class="page-transition-door" id="pageTransitionDoor" aria-hidden="true">
   <span></span>
   <span></span>

@@ -1,0 +1,15 @@
+{
+  "name": "edward-personal-site",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "python3 -m http.server 5500",
+    "test": "node scripts/site-check.mjs",
+    "lint": "node scripts/site-lint.mjs",
+    "build": "node scripts/site-build.mjs"
+  },
+  "engines": {
+    "node": ">=18"
+  }
+}

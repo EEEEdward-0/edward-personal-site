@@ -20,8 +20,26 @@
 - Responsive layout
 - Apple-inspired visual style
 - Accessibility: skip link, ARIA states, keyboard navigation, system high contrast / forced colors, reduced motion, reduced transparency, larger touch targets
+- Multilingual UI: localized Chinese / English copy with a lightweight language switch
 - Cloudflare Pages Function: proxies GitHub language statistics with an optional `GITHUB_TOKEN` / `GH_TOKEN` / `GITHUB_API_TOKEN` environment variable
 - Lab Agent Dashboard: checks an optional local status bridge first, then falls back to browser WebGPU / MediaPipe LLM runtime detection
+
+## 项目结构
+
+```text
+.
+├── index.html              # 首页 / 个人简介
+├── lab.html                # 技术札记入口
+├── runtime-probe.html      # 浏览器原生 AI 运行测试
+├── edge-ops-console.html   # 自动化运维诊断台
+├── immersive-lab.html      # 沉浸式 3D 实验页
+├── assets/                 # 图片、图标、简历 PDF 等静态资源
+├── models/                 # 本地模型与 3D 模型资源，默认不纳入 Git
+├── scripts/                # 页面交互与实验脚本
+├── styles/                 # 页面样式与共享样式
+├── _headers                # Cloudflare Pages 缓存头配置
+└── archive/                # 本地历史备份，不发布、不纳入 Git
+```
 
 ## 本机 Agent 状态桥
 

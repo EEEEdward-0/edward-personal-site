@@ -9,9 +9,29 @@ const stage = document.querySelector("#issStage");
 const sceneTitleMain = document.querySelector("#sceneTitleMain");
 const sceneTitleSub = document.querySelector("#sceneTitleSub");
 const motionToggle = document.querySelector("#motionToggle");
+const sceneMenuToggle = document.querySelector(".scene-menu-toggle");
+const sceneControlPanel = document.querySelector("#sceneControls");
 const immersiveLoader = document.querySelector("#immersiveLoader");
 const loaderProgress = document.querySelector("#loaderProgress");
 const loaderDetail = document.querySelector("#loaderDetail");
+
+//这是沉浸式场景控制菜单：默认收起，避免按钮遮挡主体画面。
+function setSceneMenuOpen(isOpen) {
+  if (!sceneMenuToggle || !sceneControlPanel || !stage) return;
+
+  stage.classList.toggle("is-menu-open", isOpen);
+  sceneControlPanel.hidden = !isOpen;
+  sceneMenuToggle.setAttribute("aria-expanded", String(isOpen));
+  sceneMenuToggle.setAttribute("aria-label", isOpen ? "收起场景控制" : "展开场景控制");
+}
+
+sceneMenuToggle?.addEventListener("click", () => {
+  setSceneMenuOpen(sceneMenuToggle.getAttribute("aria-expanded") !== "true");
+});
+
+document.addEventListener("keydown", (event) => {
+  if (event.key === "Escape") setSceneMenuOpen(false);
+});
 
 // --- Unified loader progress for multiple models ---
 const modelProgress = new Map();
@@ -42,11 +62,11 @@ function renderCombinedLoaderProgress() {
     const targetPercent = Math.min(99, Math.max(0, Math.round((knownLoaded / knownTotal) * 100)));
     loaderVisualPercent = Math.max(loaderVisualPercent, targetPercent);
     loaderProgress.textContent = `${loaderVisualPercent}%`;
-    if (loaderDetail) loaderDetail.textContent = `Loading ${activeLabel}`;
+    if (loaderDetail) loaderDetail.textContent = `正在加载 ${activeLabel}`;
     return;
   }
 
-  if (loaderDetail) loaderDetail.textContent = "Preparing scene assets";
+  if (loaderDetail) loaderDetail.textContent = "正在准备场景资源";
 }
 
 function scheduleLoaderRender() {
@@ -67,7 +87,7 @@ function updateLoaderProgress(label, loaded, total) {
 function finishLoaderProgress() {
   loaderVisualPercent = 100;
   if (loaderProgress) loaderProgress.textContent = "100%";
-  if (loaderDetail) loaderDetail.textContent = "Scene ready";
+  if (loaderDetail) loaderDetail.textContent = "场景已就绪";
 }
 
 const ISS_ALTITUDE_KM = 408;
@@ -1231,7 +1251,7 @@ function updateSceneTitle(mode) {
 
   window.setTimeout(() => {
     sceneTitleMain.textContent = nextMain;
-    sceneTitleSub.textContent = "Observer";
+    sceneTitleSub.textContent = "View";
 
     title.classList.remove(exitClass);
     title.classList.add(enterClass);
@@ -2153,7 +2173,7 @@ function bindMotionToggle(state) {
       state.enabled = false;
       state.calibrated = false;
       motionToggle.classList.remove("is-active");
-      motionToggle.textContent = "Motion View";
+      motionToggle.textContent = "运动视角";
       return;
     }
 
@@ -2169,7 +2189,7 @@ function bindMotionToggle(state) {
       state.enabled = true;
       state.calibrated = false;
       motionToggle.classList.add("is-active");
-      motionToggle.textContent = "Motion On";
+      motionToggle.textContent = "运动已开启";
     } catch (error) {
       console.warn("Motion permission failed:", error);
     }

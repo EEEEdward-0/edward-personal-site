@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Edge Ops Console</title>
+  <link rel="stylesheet" href="./styles/common.css?v=site-style-16" />
+  <link rel="stylesheet" href="./styles/edge-ops-console.css?v=site-style-16" />
+</head>
+
+<body class="ops-page" data-page="ops">
+  <main class="ops-shell">
+    <section class="ops-hero" data-glass>
+      <p class="ops-kicker" data-i18n="ops.kicker">04 / Edge Ops Console</p>
+      <h1 data-i18n="ops.title">自动化运维诊断台</h1>
+      <p data-i18n="ops.desc">
+        模拟一次边缘服务巡检：采集延迟、错误率、缓存命中率和资源压力，并生成可执行的排障建议。
+      </p>
+    </section>
+
+    <edge-ops-console></edge-ops-console>
+  </main>
+
+  <script type="module" src="./scripts/i18n.js?v=site-style-16"></script>
+  <script type="module" src="./scripts/edge-ops-console.js?v=site-style-16"></script>
+</body>
+
+</html>

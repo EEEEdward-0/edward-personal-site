@@ -41,10 +41,10 @@ window.addEventListener(
 );
 
 window.projectLinks = {
-  network: "https://github.com",
-  reddit: "https://github.com",
-  flight: "https://github.com",
-  home: "https://github.com",
+  network: "runtime-probe.html",
+  reddit: "edge-ops-console.html",
+  flight: "lab.html#language-chart",
+  home: "immersive-lab.html",
 };
 
 const projectLinks = window.projectLinks;
@@ -72,7 +72,7 @@ const selectProject = (projectId) => {
 const openProjectLink = (projectId) => {
   const url = projectLinks[projectId];
   if (url) {
-    window.open(url, "_blank", "noopener,noreferrer");
+    window.location.href = url;
   }
 };
 
@@ -84,31 +84,20 @@ workGroups.forEach((item, index) => {
   const trigger = item.querySelector(".work-group-trigger");
   if (!trigger) return;
 
-  const setOpenState = (isOpen) => {
-    item.classList.toggle("is-open", isOpen);
-    item.setAttribute("aria-expanded", String(isOpen));
-    trigger.setAttribute("aria-expanded", String(isOpen));
+  const setGroupOpen = (group, isOpen) => {
+    const groupTrigger = group.querySelector(".work-group-trigger");
+    group.classList.toggle("is-open", isOpen);
+    group.setAttribute("aria-expanded", String(isOpen));
+    groupTrigger?.setAttribute("aria-expanded", String(isOpen));
   };
 
-  setOpenState(index === 0);
+  setGroupOpen(item, index === 0);
 
   trigger.addEventListener("click", () => {
     const isCurrentlyOpen = item.classList.contains("is-open");
 
     workGroups.forEach((group) => {
-      const groupTrigger = group.querySelector(".work-group-trigger");
-
-      if (group === item) {
-        const newState = !isCurrentlyOpen;
-        group.classList.toggle("is-open", newState);
-        group.setAttribute("aria-expanded", String(newState));
-        if (groupTrigger) groupTrigger.setAttribute("aria-expanded", String(newState));
-      } else {
-        const newState = isCurrentlyOpen;
-        group.classList.toggle("is-open", newState);
-        group.setAttribute("aria-expanded", String(newState));
-        if (groupTrigger) groupTrigger.setAttribute("aria-expanded", String(newState));
-      }
+      setGroupOpen(group, group === item ? !isCurrentlyOpen : isCurrentlyOpen);
     });
   });
 });
@@ -371,114 +360,6 @@ if (languageChart) {
     Shell: 4363,
   };
 
-  const ensureLanguageAnimationStyles = () => {
-    if (document.querySelector("#language-animation-style")) return;
-
-    const style = document.createElement("style");
-    style.id = "language-animation-style";
-    style.textContent = `
-      .language-chart.is-language-loading {
-        min-height: 260px;
-        display: grid;
-        place-items: center;
-      }
-
-      .language-chart.is-language-loading::after {
-        content: "正在读取 GitHub 语言统计…";
-        color: rgba(60, 60, 67, 0.72);
-        font-weight: 700;
-        letter-spacing: 0.02em;
-        animation: languageLoadingPulse 1.4s cubic-bezier(.4, 0, .2, 1) infinite;
-      }
-
-      .language-chart.is-language-ready {
-        display: block;
-      }
-
-      .language-chart.is-language-ready .language-row {
-        opacity: 0;
-        transform: translateY(14px) scale(0.985);
-        animation:
-          languageRowEnter 680ms cubic-bezier(.16, 1, .3, 1) forwards;
-        animation-delay: var(--language-delay);
-      }
-
-      .language-chart.is-language-ready .language-bar {
-        width: var(--language-size);
-        transform-origin: left center;
-        transform: scaleX(0);
-        animation:
-          languageBarGrow var(--language-duration) cubic-bezier(.16, 1, .3, 1) forwards,
-          languageBarSettle 900ms cubic-bezier(.34, 1.56, .64, 1) forwards;
-        animation-delay:
-          calc(var(--language-delay) + 120ms),
-          calc(var(--language-delay) + var(--language-duration) - 220ms);
-      }
-
-      @keyframes languageLoadingPulse {
-        0%, 100% {
-          opacity: .38;
-          transform: translateY(0);
-        }
-        50% {
-          opacity: .82;
-          transform: translateY(-2px);
-        }
-      }
-
-      @keyframes languageRowEnter {
-        0% {
-          opacity: 0;
-          transform: translateY(14px) scale(0.985);
-        }
-        65% {
-          opacity: 1;
-          transform: translateY(-2px) scale(1.006);
-        }
-        100% {
-          opacity: 1;
-          transform: translateY(0) scale(1);
-        }
-      }
-
-      @keyframes languageBarGrow {
-        0% {
-          transform: scaleX(0);
-          filter: saturate(.85) brightness(1.08);
-        }
-        72% {
-          transform: scaleX(1.035);
-          filter: saturate(1.12) brightness(1.04);
-        }
-        100% {
-          transform: scaleX(1);
-          filter: none;
-        }
-      }
-
-      @keyframes languageBarSettle {
-        0% {
-          border-radius: 999px;
-        }
-        100% {
-          border-radius: 999px;
-        }
-      }
-
-      @media (prefers-reduced-motion: reduce) {
-        .language-chart.is-language-loading::after,
-        .language-chart.is-language-ready .language-row,
-        .language-chart.is-language-ready .language-bar {
-          animation: none;
-          opacity: 1;
-          transform: none;
-        }
-      }
-    `;
-
-    document.head.appendChild(style);
-  };
-
   const formatBytes = (bytes) => {
     if (bytes >= 1000000) return `${(bytes / 1000000).toFixed(1)} MB`;
     if (bytes >= 1000) return `${Math.round(bytes / 1000)} KB`;
@@ -491,7 +372,6 @@ if (languageChart) {
   };
 
   const setLanguageLoading = () => {
-    ensureLanguageAnimationStyles();
     languageChart.classList.remove("is-language-ready");
     languageChart.classList.add("is-language-loading");
     languageChart.innerHTML = "";
@@ -499,8 +379,6 @@ if (languageChart) {
   };
 
   const renderLanguages = (languageTotals, sourceText) => {
-    ensureLanguageAnimationStyles();
-
     const entries = Object.entries(languageTotals)
       .filter(([, bytes]) => Number(bytes) > 0)
       .sort(([, aBytes], [, bBytes]) => bBytes - aBytes)
@@ -900,136 +778,3 @@ if (agentDashboard) {
 
   scheduleAgentStatusLoad();
 }
-
-// ==========================================
-// Part 11: Complex UI Architecture 跨页面实时事件流
-// ==========================================
-
-const UI_ARCH_EVENT_KEY = "cameraEmotionLatestEvent";
-const UI_ARCH_CHANNEL_NAME = "camera-emotion-events";
-
-function initUiArchitectureFlowDemo() {
-  const runButton = document.querySelector("[data-ui-arch-run]");
-  const log = document.querySelector("[data-ui-arch-log]");
-  const state = document.querySelector("[data-ui-arch-state]");
-  const nodes = document.querySelectorAll("[data-ui-arch-step]");
-
-  if (!runButton || !log || !state || nodes.length === 0) return;
-
-  const history = [];
-  const maxHistory = 4;
-  let listening = false;
-  let channel = null;
-  let pollTimer = null;
-  let lastEventId = "";
-
-  const renderLog = () => {
-    log.replaceChildren(
-      ...history.map((line) => {
-        const item = document.createElement("span");
-        item.textContent = line;
-        return item;
-      })
-    );
-  };
-
-  const pushLine = (text) => {
-    history.unshift(`${new Date().toLocaleTimeString()} · ${text}`);
-    history.splice(maxHistory);
-    renderLog();
-  };
-
-  const setActiveStep = (key) => {
-    nodes.forEach((node) => {
-      node.classList.toggle("is-active", node.dataset.uiArchStep === key);
-    });
-  };
-
-  const normalizeEvent = (payload) => {
-    if (!payload || typeof payload !== "object") return null;
-
-    const eventId = payload.id || `${payload.timestamp || Date.now()}-${payload.event || "event"}`;
-    const step = payload.step || "store";
-    const event = payload.event || "camera-emotion:event";
-    const detail = payload.state || payload.detail || payload;
-
-    return { eventId, step, event, detail };
-  };
-
-  const consumeEvent = (payload) => {
-    const next = normalizeEvent(payload);
-    if (!next || next.eventId === lastEventId) return;
-
-    lastEventId = next.eventId;
-    setActiveStep(next.step);
-    pushLine(next.event);
-    state.textContent = JSON.stringify(next.detail, null, 2);
-  };
-
-  const readLatestStorageEvent = () => {
-    try {
-      const raw = localStorage.getItem(UI_ARCH_EVENT_KEY);
-      if (!raw) return;
-      consumeEvent(JSON.parse(raw));
-    } catch (error) {
-      pushLine("localStorage event parse failed");
-    }
-  };
-
-  function handleCameraEmotionStorage(event) {
-    if (event.key !== UI_ARCH_EVENT_KEY || !event.newValue) return;
-
-    try {
-      consumeEvent(JSON.parse(event.newValue));
-    } catch (error) {
-      pushLine("storage event parse failed");
-    }
-  }
-
-  const startListening = () => {
-    listening = true;
-    history.length = 0;
-    lastEventId = "";
-    renderLog();
-    runButton.textContent = "Stop Listening";
-    pushLine("Listening for camera-emotion events");
-
-    readLatestStorageEvent();
-
-    if ("BroadcastChannel" in window) {
-      channel = new BroadcastChannel(UI_ARCH_CHANNEL_NAME);
-      channel.addEventListener("message", (event) => consumeEvent(event.data));
-    }
-
-    window.addEventListener("storage", handleCameraEmotionStorage);
-    pollTimer = window.setInterval(readLatestStorageEvent, 300);
-  };
-
-  const stopListening = () => {
-    listening = false;
-    runButton.textContent = "Listen Live";
-    pushLine("Live listener stopped");
-
-    if (channel) {
-      channel.close();
-      channel = null;
-    }
-
-    window.removeEventListener("storage", handleCameraEmotionStorage);
-    window.clearInterval(pollTimer);
-    pollTimer = null;
-  };
-
-  runButton.textContent = "Listen Live";
-
-  runButton.addEventListener("click", () => {
-    if (listening) {
-      stopListening();
-      return;
-    }
-
-    startListening();
-  });
-}
-
-initUiArchitectureFlowDemo();

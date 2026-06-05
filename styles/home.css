@@ -3899,6 +3899,30 @@ main:focus {
   gap: 14px;
 }
 
+.language-chart.is-language-loading {
+  min-height: 260px;
+  place-items: center;
+}
+
+.language-chart.is-language-loading::after {
+  content: "正在读取 GitHub 语言统计...";
+  color: var(--ink-72);
+  font-weight: 700;
+  letter-spacing: 0;
+  animation: language-loading-pulse 1.4s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+}
+
+.language-chart.is-language-ready {
+  display: block;
+}
+
+.language-chart.is-language-ready .language-row {
+  opacity: 0;
+  transform: translateY(14px) scale(0.985);
+  animation: language-row-enter 680ms var(--ease-out) forwards;
+  animation-delay: var(--language-delay);
+}
+
 .language-row {
   display: grid;
   grid-template-columns: minmax(92px, 0.32fr) minmax(0, 1fr) minmax(72px, max-content);
@@ -3941,9 +3965,62 @@ main:focus {
   transform-origin: left center;
 }
 
-.language-panel.is-visible .language-bar {
+.language-chart.is-language-ready .language-bar {
+  width: var(--language-size);
+  animation: language-bar-grow var(--language-duration) var(--ease-out) forwards;
+  animation-delay: calc(var(--language-delay) + 120ms);
+}
+
+.language-panel.is-visible .language-chart:not(.is-language-ready) .language-bar {
   animation: language-bar-enter var(--language-duration, 2600ms) cubic-bezier(0.16, 1, 0.3, 1) forwards;
   animation-delay: var(--language-delay, 0ms);
+}
+
+@keyframes language-loading-pulse {
+  0%,
+  100% {
+    opacity: 0.38;
+    transform: translateY(0);
+  }
+
+  50% {
+    opacity: 0.82;
+    transform: translateY(-2px);
+  }
+}
+
+@keyframes language-row-enter {
+  0% {
+    opacity: 0;
+    transform: translateY(14px) scale(0.985);
+  }
+
+  65% {
+    opacity: 1;
+    transform: translateY(-2px) scale(1.006);
+  }
+
+  100% {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+@keyframes language-bar-grow {
+  0% {
+    transform: scaleX(0);
+    filter: saturate(0.85) brightness(1.08);
+  }
+
+  72% {
+    transform: scaleX(1.035);
+    filter: saturate(1.12) brightness(1.04);
+  }
+
+  100% {
+    transform: scaleX(1);
+    filter: none;
+  }
 }
 
 @keyframes language-bar-enter {
@@ -3961,6 +4038,16 @@ main:focus {
 
   100% {
     transform: scaleX(1);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .language-chart.is-language-loading::after,
+  .language-chart.is-language-ready .language-row,
+  .language-chart.is-language-ready .language-bar {
+    opacity: 1;
+    transform: none;
+    animation: none;
   }
 }
 
@@ -4620,7 +4707,7 @@ main:focus {
     width: 100%;
     height: 44px;
     max-height: 0;
-    grid-template-columns: repeat(5, minmax(0, 1fr));
+    grid-template-columns: repeat(6, minmax(0, 1fr));
     gap: 0;
     overflow: hidden;
     margin: 0;
@@ -4682,7 +4769,7 @@ main:focus {
 
 @media (max-width: 520px) {
   .topbar .nav-links {
-    grid-template-columns: repeat(5, minmax(0, 1fr));
+    grid-template-columns: repeat(6, minmax(0, 1fr));
   }
 
   .topbar.is-menu-open .nav-links {
@@ -5433,5 +5520,29 @@ main:focus {
   transform: translate(-50%, -50%) !important;
 }
 
+/* 这是多语言切换按钮样式：桌面放导航尾部，实验页使用右上角浮动。 */
+.language-switch {
+  display: inline-flex;
+  width: 38px;
+  height: 28px;
+  align-items: center;
+  justify-content: center;
+  border: 0;
+  border-radius: 10px;
+  color: rgba(29, 29, 31, 0.78);
+  background: rgba(255, 255, 255, 0.42);
+  box-shadow: inset 0 0 0 1px rgba(29, 29, 31, 0.08);
+  font: inherit;
+  font-size: 0.76rem;
+  font-weight: 800;
+  cursor: pointer;
+}
 
-
+.language-switch.is-floating {
+  position: fixed;
+  z-index: 60;
+  top: 14px;
+  right: 14px;
+  backdrop-filter: blur(18px) saturate(1.2);
+  -webkit-backdrop-filter: blur(18px) saturate(1.2);
+}

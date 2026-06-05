@@ -1079,3 +1079,286 @@ body.is-scene-ready .immersive-footer {
     max-width: 320px;
   }
 }
+
+/* Apple-style button refinement for scene controls. */
+.satellite-switches button,
+.scene-inspector button,
+.motion-toggle {
+  border-radius: 12px;
+}
+
+/* 这是沉浸式场景的宇宙主题按钮组：统一尺寸、对称排列，并保留轻量点击动画。 */
+.satellite-switches {
+  display: grid !important;
+  grid-template-columns: repeat(4, minmax(112px, 1fr)) !important;
+  gap: 10px !important;
+  width: min(580px, calc(100vw - 220px)) !important;
+  padding: 8px !important;
+  border: 1px solid rgba(135, 170, 255, 0.22) !important;
+  border-radius: 18px !important;
+  background:
+    linear-gradient(135deg, rgba(20, 34, 78, 0.56), rgba(6, 10, 26, 0.42)),
+    rgba(8, 12, 28, 0.48) !important;
+  box-shadow:
+    0 18px 48px rgba(0, 0, 0, 0.28),
+    inset 0 1px 0 rgba(255, 255, 255, 0.14) !important;
+  backdrop-filter: blur(22px) saturate(1.2) !important;
+}
+
+.scene-inspector {
+  width: 180px !important;
+  gap: 10px !important;
+  padding: 8px !important;
+  border: 1px solid rgba(135, 170, 255, 0.18) !important;
+  border-radius: 18px !important;
+  background:
+    linear-gradient(160deg, rgba(12, 18, 42, 0.5), rgba(5, 7, 18, 0.38)),
+    rgba(8, 12, 28, 0.44) !important;
+  box-shadow:
+    0 18px 44px rgba(0, 0, 0, 0.24),
+    inset 0 1px 0 rgba(255, 255, 255, 0.12) !important;
+  backdrop-filter: blur(22px) saturate(1.18) !important;
+}
+
+.satellite-switches button,
+.scene-inspector button,
+.motion-toggle {
+  position: relative !important;
+  justify-content: center !important;
+  width: 100% !important;
+  min-width: 0 !important;
+  min-height: 40px !important;
+  padding: 0 12px !important;
+  overflow: hidden !important;
+  border: 1px solid rgba(170, 198, 255, 0.26) !important;
+  border-radius: 12px !important;
+  background:
+    radial-gradient(circle at 50% 0%, rgba(118, 170, 255, 0.26), transparent 56%),
+    linear-gradient(180deg, rgba(255, 255, 255, 0.12), rgba(255, 255, 255, 0.045)) !important;
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.18),
+    0 8px 22px rgba(0, 0, 0, 0.18) !important;
+  color: rgba(245, 248, 255, 0.86) !important;
+  font-size: 12px !important;
+  letter-spacing: 0 !important;
+  transition:
+    transform 190ms cubic-bezier(0.2, 0.8, 0.2, 1),
+    border-color 190ms ease,
+    box-shadow 190ms ease,
+    background 190ms ease,
+    color 190ms ease !important;
+}
+
+.satellite-switches button::before,
+.scene-inspector button::before,
+.motion-toggle::before {
+  content: "" !important;
+  position: absolute !important;
+  inset: 0 !important;
+  background: linear-gradient(120deg, transparent, rgba(255, 255, 255, 0.28), transparent) !important;
+  opacity: 0 !important;
+  transform: translateX(-80%) !important;
+  transition: opacity 190ms ease, transform 520ms ease !important;
+}
+
+.satellite-switches button:hover,
+.scene-inspector button:hover,
+.motion-toggle:hover {
+  border-color: rgba(188, 214, 255, 0.48) !important;
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.26),
+    0 0 22px rgba(81, 126, 255, 0.2),
+    0 12px 28px rgba(0, 0, 0, 0.22) !important;
+  color: #ffffff !important;
+  transform: translateY(-1px) !important;
+}
+
+.satellite-switches button:hover::before,
+.scene-inspector button:hover::before,
+.motion-toggle:hover::before {
+  opacity: 1 !important;
+  transform: translateX(80%) !important;
+}
+
+.satellite-switches button:active,
+.scene-inspector button:active,
+.motion-toggle:active {
+  transform: translateY(1px) scale(0.975) !important;
+}
+
+.satellite-switches button.is-active {
+  border-color: rgba(115, 164, 255, 0.74) !important;
+  background:
+    radial-gradient(circle at 50% 0%, rgba(137, 185, 255, 0.42), transparent 58%),
+    linear-gradient(180deg, rgba(87, 123, 255, 0.28), rgba(20, 42, 102, 0.18)) !important;
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.28),
+    0 0 24px rgba(83, 133, 255, 0.32) !important;
+}
+
+@media (max-width: 900px) {
+  .satellite-switches {
+    display: flex !important;
+    width: auto !important;
+    max-width: 68vw !important;
+  }
+
+  .scene-inspector {
+    width: auto !important;
+  }
+}
+
+@media (max-width: 430px) {
+  .satellite-switches,
+  .scene-inspector {
+    width: 100vw !important;
+    max-width: none !important;
+  }
+}
+
+/* 这是最终沉浸式控制层：收进折叠菜单，去掉胶囊边框，尽量不抢画面注意力。 */
+.scene-menu-toggle {
+  position: absolute;
+  top: 17px;
+  right: 66px;
+  z-index: 82;
+  display: grid;
+  width: 42px;
+  height: 42px;
+  place-items: center;
+  padding: 10px;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  box-shadow: none;
+  cursor: pointer;
+  pointer-events: auto;
+}
+
+.scene-ui {
+  z-index: 80 !important;
+}
+
+.scene-menu-toggle span {
+  display: block;
+  width: 20px;
+  height: 2px;
+  border-radius: 0;
+  background: rgba(245, 248, 255, 0.86);
+  box-shadow: 0 0 16px rgba(126, 169, 255, 0.48);
+  transition:
+    transform 220ms ease,
+    opacity 220ms ease,
+    background 220ms ease;
+}
+
+.scene-menu-toggle:hover span,
+.scene-menu-toggle:focus-visible span {
+  background: #ffffff;
+}
+
+.scene-ui.is-menu-open .scene-menu-toggle span:nth-child(1) {
+  transform: translateY(7px) rotate(45deg);
+}
+
+.scene-ui.is-menu-open .scene-menu-toggle span:nth-child(2) {
+  opacity: 0;
+}
+
+.scene-ui.is-menu-open .scene-menu-toggle span:nth-child(3) {
+  transform: translateY(-7px) rotate(-45deg);
+}
+
+.scene-control-panel {
+  position: absolute;
+  top: 64px;
+  right: clamp(18px, 3.2vw, 54px);
+  z-index: 81;
+  display: grid;
+  width: min(260px, calc(100vw - 36px));
+  gap: 10px;
+  padding: 12px 14px;
+  background:
+    linear-gradient(180deg, rgba(5, 8, 20, 0.58), rgba(5, 8, 20, 0.24)),
+    rgba(5, 8, 20, 0.18);
+  box-shadow: 0 22px 52px rgba(0, 0, 0, 0.28);
+  backdrop-filter: blur(18px) saturate(1.1);
+  pointer-events: auto;
+}
+
+.scene-control-panel[hidden] {
+  display: none !important;
+}
+
+.scene-control-panel .satellite-switches,
+.scene-control-panel .scene-inspector {
+  position: static !important;
+  display: grid !important;
+  grid-template-columns: 1fr !important;
+  width: 100% !important;
+  max-width: none !important;
+  gap: 2px !important;
+  padding: 0 !important;
+  border: 0 !important;
+  border-radius: 0 !important;
+  background: transparent !important;
+  box-shadow: none !important;
+  transform: none !important;
+  backdrop-filter: none !important;
+}
+
+.scene-control-panel .satellite-switches {
+  padding-bottom: 8px !important;
+  border-bottom: 1px solid rgba(245, 248, 255, 0.08) !important;
+}
+
+.scene-control-panel .satellite-switches button,
+.scene-control-panel .scene-inspector button,
+.scene-control-panel .motion-toggle {
+  justify-content: flex-start !important;
+  min-height: 30px !important;
+  width: 100% !important;
+  padding: 0 !important;
+  border: 0 !important;
+  border-radius: 0 !important;
+  background: transparent !important;
+  box-shadow: none !important;
+  color: rgba(245, 248, 255, 0.66) !important;
+  font-size: 11px !important;
+  font-weight: 850 !important;
+  text-align: left !important;
+  text-transform: uppercase !important;
+}
+
+.scene-control-panel .satellite-switches button::before,
+.scene-control-panel .scene-inspector button::before,
+.scene-control-panel .motion-toggle::before {
+  display: none !important;
+}
+
+.scene-control-panel .satellite-switches button:hover,
+.scene-control-panel .scene-inspector button:hover,
+.scene-control-panel .motion-toggle:hover,
+.scene-control-panel .satellite-switches button:focus-visible,
+.scene-control-panel .scene-inspector button:focus-visible,
+.scene-control-panel .motion-toggle:focus-visible {
+  color: #ffffff !important;
+  transform: translateX(3px) !important;
+}
+
+.scene-control-panel .satellite-switches button.is-active {
+  color: rgba(146, 187, 255, 0.96) !important;
+  text-shadow: 0 0 16px rgba(95, 145, 255, 0.44) !important;
+}
+
+@media (max-width: 640px) {
+  .scene-menu-toggle {
+    top: 18px;
+    right: 66px;
+  }
+
+  .scene-control-panel {
+    top: 64px;
+    right: 18px;
+  }
+}

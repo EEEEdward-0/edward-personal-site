@@ -1,12 +1,14 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="zh-CN">
+
+<head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <meta name="description" content="Edward Zheng 的个人空间，记录技术实践、项目想法、学习路径与正在探索的方向。" />
-  <title>Edward Zheng | Notes, Builds & Experiments</title>
+  <title>Edward Zheng | Notes, Builds &amp; Experiments</title>
   <link rel="icon" href="/assets/favicon.svg" type="image/svg+xml" />
   <link rel="preload" href="/assets/liquid-glass-hero.png" as="image" />
-  <link rel="stylesheet" href="./styles/home.css?v=site-style-14" />
+  <link rel="stylesheet" href="./styles/home.css?v=site-style-16" />
 </head>
 
 <body>
@@ -35,7 +37,7 @@
         <button class="contact-toggle" type="button" aria-expanded="false" aria-controls="contact-popover">联系</button>
       </nav>
       <div class="contact-popover" id="contact-popover" data-glass hidden>
-        <a class="mail-card" href="mailto:jueslibrary@gamil.com">
+        <a class="mail-card" href="mailto:jueslibrary@gmail.com">
           <span class="mail-logo" aria-hidden="true">
             <svg viewBox="0 0 48 48">
               <path fill="#ea4335" d="M6 14.4 24 27.8l18-13.4v22.2A3.4 3.4 0 0 1 38.6 40H9.4A3.4 3.4 0 0 1 6 36.6Z" />
@@ -76,32 +78,31 @@
         <div class="hero-depth hero-depth-b" aria-hidden="true"></div>
 
         <div class="hero-content reveal">
-          <p class="eyebrow">Operations Engineer / DBA / Technical Support</p>
+          <p class="eyebrow">Operations · Database · Automation</p>
           <h1>郑卓豪</h1>
           <p class="hero-copy">
-            精通运维与脚本开发，能够支持企业技术，熟悉 Linux、主流数据库、Python、Shell 以及网络安全基础。
+            关注系统稳定、数据库维护与自动化工具，把复杂问题拆成清晰、可执行的解决方案。
           </p>
         </div>
 
         <aside class="hero-panel reveal delay-1" data-glass>
           <span class="panel-label">Current Focus</span>
-          <strong>自动化运维 · 容器化部署 · AI 提高效率</strong>
-          <p>用 LLM、脚本与基础设施经验，让排障更快，维护更稳，办公更省。</p>
-          <a class="text-link" href="lab.html">阅读技术札记</a>
+          <strong>自动化运维 · 容器化部署 · AI 辅助工作流</strong>
+          <p>用脚本、LLM 和基础设施经验，让排障更快，维护更稳，流程更省心。</p>
         </aside>
       </section>
 
       <section class="section split" id="about">
         <div class="section-heading reveal">
           <p class="eyebrow">Profile</p>
-          <h2>稳系统、通流程、强调执行力</h2>
+          <h2>稳定系统，理顺流程，推动问题闭环</h2>
         </div>
         <div class="narrative reveal delay-1">
           <p>
-            拥有银行生产环境和企业技术支持经历，能够参与问题排查、系统维护、流程执行与跨团队协作。技术栈覆盖 Linux、数据库、脚本开发、网络安全、容器化与数据平台。
+            有银行生产环境和企业技术支持经历，熟悉问题排查、系统维护、流程执行与跨团队协作。技术栈覆盖 Linux、数据库、脚本开发、网络安全、容器化与数据平台。
           </p>
           <p>
-            近期在英国完成数据科学方向深造，并持续把数据处理、端侧模型、自动化工具和基础设施能力结合起来，构建更可观测、更可复用的技术方案。
+            近期完成数据科学方向学习，并持续把数据处理、端侧模型、自动化工具和基础设施经验结合起来，沉淀可复用的技术方案。
           </p>
         </div>
       </section>
@@ -109,7 +110,7 @@
       <section class="section" id="skills">
         <div class="section-heading reveal">
           <p class="eyebrow">Professional Skills</p>
-          <h2>掌握运维、通晓数据、能够落地实践</h2>
+          <h2>覆盖运维、数据与自动化实践</h2>
         </div>
         <div class="skill-grid">
           <article class="skill-card reveal" data-glass>
@@ -210,7 +211,7 @@
         </div>
         <div class="project-grid">
           <article class="project-card feature reveal is-selected" data-glass data-project="network" tabindex="0"
-            role="link" aria-label="打开 GitHub：本地网络异常检测与可视化系统">
+            role="link" aria-label="查看项目：本地网络异常检测与可视化系统">
             <div class="project-icon network-icon" aria-hidden="true">
               <svg viewBox="0 0 48 48">
                 <path class="ecg-line" d="M5 29h7l3-8 5 17 5-29 6 26 4-11 3 5h5" />
@@ -222,12 +223,9 @@
             </div>
             <p class="tag">Swift / Core ML / SQLite / Networking</p>
             <h3>本地网络异常检测与可视化系统</h3>
-            <p>设计本地优先的网络异常检测系统，覆盖流量采集、特征提取、模型推理、规则匹配与结果展示。</p>
-            <p>基于 Core ML 完成端侧部署，并结合 SQLite + Trie 实现本地规则库与 IP / CIDR 高效匹配。</p>
-            <span class="github-link">打开 GitHub</span>
           </article>
           <article class="project-card reveal delay-1" data-glass data-project="reddit" tabindex="0" role="link"
-            aria-label="打开 GitHub：Reddit 数据隐私审计与自动化抓取工具">
+            aria-label="查看项目：Reddit 数据隐私审计与自动化抓取工具">
             <div class="project-icon privacy-icon" aria-hidden="true">
               <svg class="privacy-padlock" viewBox="0 0 48 48">
                 <path class="lock-shackle" d="M17 22v-5a7 7 0 0 1 14 0v5" />
@@ -237,11 +235,9 @@
             </div>
             <p class="tag">Python / Privacy Audit / Pipeline</p>
             <h3>Reddit 数据隐私审计与自动化抓取工具</h3>
-            <p>构建数据抓取、清洗、特征提取、风险识别与报告生成流程，输出标准化风险评分和可视化分析报告。</p>
-            <span class="github-link">打开 GitHub</span>
           </article>
           <article class="project-card reveal delay-2" data-glass data-project="flight" tabindex="0" role="link"
-            aria-label="打开 GitHub：航班数据处理系统">
+            aria-label="查看项目：航班数据处理系统">
             <div class="project-icon data-icon flight-stack-icon" aria-hidden="true">
               <svg viewBox="0 0 48 48">
                 <g class="db-cyl db-cyl-top">
@@ -263,11 +259,9 @@
             </div>
             <p class="tag">Hadoop / MapReduce / Spark</p>
             <h3>航班数据处理系统</h3>
-            <p>搭建分布式批处理环境，完成航班数据接入、清洗、聚合统计与结果输出，并使用 Spark 优化部分任务。</p>
-            <span class="github-link">打开 GitHub</span>
           </article>
           <article class="project-card reveal delay-3" data-glass data-project="home" tabindex="0" role="link"
-            aria-label="打开 GitHub：Home Assistant 智能家居部署">
+            aria-label="查看项目：Home Assistant 智能家居部署">
             <div class="project-icon home-icon" aria-hidden="true">
               <span class="home-glow"></span>
               <span class="home-glyph">
@@ -278,7 +272,6 @@
             </div>
             <p class="tag">Raspberry Pi / MQTT / SSL</p>
             <h3>Home Assistant 智能家居部署</h3>
-            <p>完成 Zigbee / Wi-Fi / Bluetooth 设备接入、MQTT 协议对接、自动化脚本、内网穿透与 SSL/TLS 安全配置。</p>
           </article>
         </div>
       </section>
@@ -381,7 +374,8 @@
     </footer>
   </div>
 
-  <script src="./scripts/home.js"></script>
+  <script type="module" src="./scripts/i18n.js?v=site-style-16"></script>
+  <script src="./scripts/home.js?v=site-style-16"></script>
 <script defer src="https://static.cloudflareinsights.com/beacon.min.js/v833ccba57c9e4d2798f2e76cebdd09a11778172276447" integrity="sha512-57MDmcccJXYtNnH+ZiBwzC4jb2rvgVCEokYN+L/nLlmO8rfYT/gIpW2A569iJ/3b+0UEasghjuZH/ma3wIs/EQ==" data-cf-beacon='{"version":"2024.11.0","token":"07c67dbdbd014f419e37bf711e29905f","r":1,"server_timing":{"name":{"cfCacheStatus":true,"cfEdge":true,"cfExtPri":true,"cfL4":true,"cfOrigin":true,"cfSpeedBrain":true},"location_startswith":null}}' crossorigin="anonymous"></script>
 </body>
 

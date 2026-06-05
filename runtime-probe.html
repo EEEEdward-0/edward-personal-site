@@ -4,29 +4,29 @@
 <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Browser-native AI Runtime Probe</title>
+    <title>浏览器 AI 运行测试</title>
 
-    <link rel="stylesheet" href="/styles/common.css?v=site-style-14" />
-    <link rel="stylesheet" href="/styles/runtime-probe.css?v=site-style-14" />
+    <link rel="stylesheet" href="/styles/common.css?v=site-style-16" />
+    <link rel="stylesheet" href="/styles/runtime-probe.css?v=site-style-16" />
 </head>
 
 <body class="runtime-page">
     <main class="runtime-shell">
         <section class="runtime-carousel" aria-label="Runtime feature sections">
             <div class="runtime-carousel-track" id="runtimeCarouselTrack">
-                <article class="runtime-slide" aria-label="Browser-native AI Runtime">
+                <article class="runtime-slide" aria-label="浏览器 AI 运行测试">
                     <div class="runtime-hero">
                         <div class="runtime-copy">
                             <p class="runtime-kicker">01 / Runtime Layer</p>
 
-                            <h1>Browser-native AI Runtime</h1>
+                            <h1>浏览器 AI 运行测试</h1>
 
                             <p class="runtime-desc">
-                                检测当前浏览器是否支持 WebGPU、端侧推理与本地模型执行能力。
+                                检查当前浏览器是否支持 WebGPU、本地推理和内置 AI 接口。
                             </p>
 
                             <button class="runtime-trigger" id="runtimeTrigger" type="button">
-                                Run Test
+                                开始测试
                             </button>
                         </div>
 
@@ -45,17 +45,17 @@
                     </div>
                 </article>
 
-                <article class="runtime-slide" id="cameraPanel" aria-label="Camera Emotion Inference">
+                <article class="runtime-slide" id="cameraPanel" aria-label="自动化运维诊断台">
                     <div class="camera-panel">
                         <div class="camera-copy">
-                            <p class="runtime-kicker">02 / Camera Layer</p>
-                            <h2>Camera Emotion Inference</h2>
+                            <p class="runtime-kicker">02 / Ops Layer</p>
+                            <h2>自动化运维诊断台</h2>
                             <p>
-                                基于连续相机帧进行人脸检测、表情识别与情绪倾向推测。
+                                模拟服务巡检、风险识别和排障建议，把运维经验做成可复用工具。
                             </p>
 
                             <button class="camera-launch" id="cameraLaunch" type="button">
-                                Open Camera Demo
+                                打开诊断台
                             </button>
                         </div>
 
@@ -80,7 +80,7 @@
 
             <div class="runtime-carousel-dots" aria-label="Section pagination">
                 <button class="is-active" type="button" aria-label="显示 Runtime Layer" data-slide="0"></button>
-                <button type="button" aria-label="显示 Camera Emotion" data-slide="1"></button>
+                <button type="button" aria-label="显示自动化运维诊断台" data-slide="1"></button>
             </div>
         </section>
 
@@ -88,10 +88,10 @@
             <div class="runtime-panel-head">
                 <div>
                     <p class="runtime-kicker">Runtime Status</p>
-                    <h2>Capability Result</h2>
+                    <h2>能力检测结果</h2>
                 </div>
 
-                <span class="runtime-badge" id="runtimeBadge">Checking</span>
+                <span class="runtime-badge" id="runtimeBadge">检测中</span>
             </div>
 
             <div class="runtime-grid">
@@ -129,15 +129,15 @@
 
         <section class="vision-panel" id="visionPanel" hidden>
             <div class="vision-head">
-                <p class="runtime-kicker">Local Vision Inference</p>
-                <h2>AI Image Inspector</h2>
-                <p>Upload an image and run browser-native image recognition locally.</p>
+                    <p class="runtime-kicker">Local Vision Inference</p>
+                    <h2>本地图片识别</h2>
+                    <p>上传图片，在浏览器内完成基础识别和结果记录。</p>
             </div>
 
             <div class="vision-upload">
                 <input id="imageInput" type="file" accept="image/*" multiple hidden />
                 <button class="runtime-trigger" id="imageSelect" type="button">
-                    Upload Image
+                    上传图片
                 </button>
 
                 <div class="image-preview-box" id="imagePreviewBox">
@@ -146,8 +146,8 @@
                     <div class="image-preview-placeholder" id="imagePreviewPlaceholder">
                         <span class="preview-icon">▧</span>
                         <div class="preview-copy">
-                            <strong>No image selected</strong>
-                            <em>Upload an image to preview</em>
+                            <strong>尚未选择图片</strong>
+                            <em>上传后可在这里预览</em>
                         </div>
                     </div>
                 </div>
@@ -255,7 +255,8 @@
         </section>
     </main>
 
-    <script type="module" src="/scripts/runtime-probe.js?v=site-style-14"></script>
+    <script type="module" src="/scripts/i18n.js?v=site-style-16"></script>
+    <script type="module" src="/scripts/runtime-probe.js?v=site-style-16"></script>
 </body>
 
 </html>
