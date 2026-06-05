@@ -72,12 +72,22 @@ function finishLoaderProgress() {
 
 const ISS_ALTITUDE_KM = 408;
 const EARTH_RADIUS = 1.72;
+const MOON_DIAMETER_METERS = 3474800; // Moon diameter: 3474.8 km
 const MOON_RADIUS_RATIO = 0.273;
 const MOON_RADIUS = EARTH_RADIUS * MOON_RADIUS_RATIO;
+const MOON_SCENE_DIAMETER = MOON_RADIUS * 2;
 const MOON_DISPLAY_DISTANCE = 4.85;
 const ISS_ORBIT_PERIOD_MIN = 92.68;
 const ISS_INCLINATION_DEG = 51.64;
 const ISS_EPOCH_MS = Date.UTC(2026, 0, 1, 0, 0, 0);
+const EARTH_SAT_VISUAL_SPEED = 90;
+const LUNAR_ORBIT_VISUAL_SPEED = 90;
+const GATEWAY_VISUAL_SPEED = 7200;
+const SUN_DISTANCE = 30;
+const SUN_BASE_SIZE = 1.05;
+
+// --- Visual scaling factor for ISS and Gateway ---
+const VISUAL_FACTOR = 18000; // Shared visual scale for real-size ISS/Gateway proportions.
 
 const MODEL_PATHS = {
   moonSmall: "https://www.itwork.dpdns.org/models/Moon_NASA_LRO_8k_Topo_Small.glb",
@@ -86,10 +96,14 @@ const MODEL_PATHS = {
   lro: "https://www.itwork.dpdns.org/models/lro.glb",
   starlink: "https://www.itwork.dpdns.org/models/starlink.glb",
   weather: "https://www.itwork.dpdns.org/models/weather-goes.glb",
-  ISS: "https://www.itwork.dpdns.org/models/ISS_stationary.glb"
+  ISS: "https://www.itwork.dpdns.org/models/ISS_stationary.glb",
+  sun: "https://www.itwork.dpdns.org/models/sun_and_solar_flares.glb",
+  // 月球空间站 Gateway 模型
+  gateway: "https://www.itwork.dpdns.org/models/MoonGateway_Core.glb"
 };
-// Moon 23K 超高清模型加载开关
-const ENABLE_23K = true; // 用户可切换 true 以尝试加载 23K 超高清 Moon
+// Moon 23K ultra HD model switch.
+// Keep false for production; set true locally to test 23K loading.
+const ENABLE_23K = false;
 
 const satelliteVisibility = {
   starlink: true,
@@ -102,7 +116,8 @@ const isMobile = window.matchMedia("(max-width: 760px)").matches;
 const SATELLITE_CONFIG_OVERRIDES = {
   starlink: { count: isMobile ? 12 : 36, modelSize: isMobile ? 0.007 : 0.012, radius: isMobile ? 2.75 : 2.24 },
   weather: { count: isMobile ? 3 : 6, modelSize: isMobile ? 0.12 : 0.32, radius: isMobile ? 4.4 : 4.05 },
-  ISS: { modelSize: isMobile ? 0.28 : 0.52 } // ISS scale adjustment for mobile
+  // ISS size is now calculated below using real-size scaling
+  ISS: { modelSize: null }
 };
 
 const TEXTURES = {
@@ -301,6 +316,9 @@ function boot() {
   const lunarSystem = createLunarOrbiterSystem(gltfLoader);
   moon.add(lunarSystem.root);
 
+  const gatewaySystem = createGatewaySystem(backgroundGltfLoader, renderer);
+  moon.add(gatewaySystem.root);
+
   const moonHitArea = new THREE.Mesh(
     new THREE.SphereGeometry(MOON_RADIUS * 1.65, 32, 32),
     new THREE.MeshBasicMaterial({
@@ -372,6 +390,7 @@ function boot() {
       savedView = null;
       sceneFocus = "earth";
       focusAutoUntil = 0;
+      updateSceneTitle("earth");
       return;
     }
 
@@ -380,7 +399,8 @@ function boot() {
     }
 
     sceneFocus = mode;
-    focusAutoUntil = performance.now() + 1100;
+    updateSceneTitle(getFocusSceneDomain(mode));
+    focusAutoUntil = performance.now() + (mode === "sun" ? 2600 : 1100);
   });
 
 
@@ -406,47 +426,70 @@ function boot() {
       earth,
       moon,
       moonHitArea,
+      sunSystem,
       sceneFocus,
       isMobile: window.matchMedia("(max-width: 900px)").matches
     });
 
-    if (clicked === "moon" && sceneFocus !== "moon") {
-      switchSceneFocus("moon");
+    const currentDomain = getFocusSceneDomain(sceneFocus);
+
+    if (clicked === "earth") {
+      if (currentDomain !== "earth") switchSceneFocus("earth");
       return;
     }
 
-    if (clicked === "earth" && sceneFocus === "moon") {
-      switchSceneFocus("earth");
+    if (clicked === "moon") {
+      switchSceneFocus(currentDomain === "moon" ? "earth" : "moon");
+      return;
+    }
+
+    if (clicked === "sun") {
+      switchSceneFocus(currentDomain === "sun" ? "earth" : "sun");
     }
   });
 
   function switchSceneFocus(mode) {
     if (sceneFocus === mode) return;
 
-    if (!savedView && sceneFocus === "earth") {
+    const currentDomain = getFocusSceneDomain(sceneFocus);
+    const nextDomain = getFocusSceneDomain(mode);
+
+    if (!savedView && currentDomain === "earth" && nextDomain !== "earth") {
       savedView = captureSceneView(camera, controls);
     }
 
-    if (mode === "earth" && savedView) {
+    if (nextDomain === "earth" && savedView) {
       restoreView = savedView;
       restoreUntil = performance.now() + 850;
       savedView = null;
     }
 
     sceneFocus = mode;
-    focusAutoUntil = mode === "moon" ? performance.now() + 1100 : 0;
-    updateSceneTitle(mode);
+    focusAutoUntil = nextDomain !== "earth"
+      ? performance.now() + (nextDomain === "sun" ? 2600 : 1100)
+      : 0;
+    updateSceneTitle(nextDomain);
   }
 
   let issModel = null;
   const issSolarPanels = [];
+
+  // --- Real-size scaling for ISS based on Moon radius ---
+  // ISS length ~ 72.8m, Moon diameter ~ 3474.8km
+  // MOON_RADIUS in scene units = 0.47056 (1.72 * 0.273)
+  // 1 scene unit = 3474.8km / (MOON_RADIUS * 2)
+  // So ISS length in scene units = (72.8 / MOON_DIAMETER_METERS) * (MOON_SCENE_DIAMETER)
+  const ISS_LENGTH_METERS = 72.8;
+  let issSceneSize = (ISS_LENGTH_METERS / MOON_DIAMETER_METERS) * MOON_SCENE_DIAMETER;
+  issSceneSize *= VISUAL_FACTOR; // Apply visual factor
+  SATELLITE_CONFIG_OVERRIDES.ISS.modelSize = isMobile ? issSceneSize * 0.55 : issSceneSize;
 
   gltfLoader.load(
     MODEL_PATHS.ISS,
     (gltf) => {
       issModel = gltf.scene;
       issModel.name = "ISS Station";
-      normalizeModel(issModel, SATELLITE_CONFIG_OVERRIDES.ISS.modelSize);
+      normalizeModel(issModel, SATELLITE_CONFIG_OVERRIDES.ISS.modelSize, VISUAL_FACTOR);
       issModel.rotation.set(0, Math.PI * 0.5, 0);
 
       issModel.traverse((object) => {
@@ -475,6 +518,9 @@ function boot() {
 
   const stars = makeStars();
   scene.add(stars);
+
+  const sunSystem = createSunSystem(gltfLoader, renderer);
+  scene.add(sunSystem);
 
   const sunLight = new THREE.DirectionalLight(0xffffff, 4.2);
   scene.add(sunLight);
@@ -523,6 +569,7 @@ function boot() {
     updateIssReadout(issLat, issLon);
 
     const sunDir = getSunDirection(new Date());
+    animateSunSystem(sunSystem, t, sunDir);
     sunLight.position.copy(sunDir.clone().multiplyScalar(8));
     night.material.uniforms.sunDirection.value.copy(sunDir);
     cityLights.material.uniforms.sunDirection.value.copy(sunDir);
@@ -544,7 +591,8 @@ function boot() {
     }
 
     moonHitArea.position.copy(moon.position);
-    lunarSystem.animate(t, sunDir, sceneFocus === "moon");
+    lunarSystem.animate(t, sunDir, sceneFocus === "moon" || sceneFocus === "lro");
+    gatewaySystem.animate(t, sunDir, sceneFocus === "moon" || sceneFocus === "gateway");
 
     earth.rotation.y = t * 0.012;
     clouds.rotation.y = t * 0.018;
@@ -563,6 +611,8 @@ function boot() {
         issAnchor,
         satelliteSystem,
         lunarSystem,
+        gatewaySystem,
+        sunSystem,
         performance.now() < focusAutoUntil
       );
     }
@@ -582,35 +632,35 @@ function createLunarOrbiterSystem(gltfLoader) {
   const root = new THREE.Group();
   root.name = "Lunar Orbiter System";
 
-  const orbit = createLunarOrbitLine(0.82, THREE.MathUtils.degToRad(72));
-  const orbiter = createLroStyleOrbiter(gltfLoader);
+  // LRO uses the real imported GLB model. Do not add low-quality placeholder spacecraft here.
+  const lroOrbit = createLunarOrbitLine(0.82, THREE.MathUtils.degToRad(72));
+  const lroOrbiter = createLroStyleOrbiter(gltfLoader);
+  root.add(lroOrbit, lroOrbiter);
 
-  root.add(orbit, orbiter);
-
-  // Orbital elements for LRO (approx): semi-major axis = 0.82 (relative), inclination = 72 deg, period ~ 2h (7200s)
-  const LRO_ORBITAL_PERIOD_S = 7200; // 2 hours
+  const LRO_ORBITAL_PERIOD_S = 7200;
   const LRO_INCLINATION_RAD = THREE.MathUtils.degToRad(72);
-  const LRO_RAAN_RAD = 0; // for demonstration, can be set for precession
-  const LRO_EPOCH = Date.UTC(2024, 0, 1, 0, 0, 0); // arbitrary reference epoch
+  const LRO_EPOCH = Date.UTC(2024, 0, 1, 0, 0, 0);
 
-  function getLroPhase(now) {
+  function getLroPhase(now, t) {
     const elapsed = (now.getTime() - LRO_EPOCH) / 1000;
-    return ((elapsed / LRO_ORBITAL_PERIOD_S) * Math.PI * 2) % (Math.PI * 2);
+    const realtimePhase = (elapsed / LRO_ORBITAL_PERIOD_S) * Math.PI * 2;
+    const visualPhase = (t / LRO_ORBITAL_PERIOD_S) * Math.PI * 2 * LUNAR_ORBIT_VISUAL_SPEED;
+    return (realtimePhase + visualPhase) % (Math.PI * 2);
   }
 
   return {
     root,
-    orbiter,
+    orbiter: lroOrbiter,
     animate(t, sunDirection, isMoonFocus) {
-      // Use real UTC-based phase
       const now = new Date();
-      const phase = getLroPhase(now);
-      const position = lunarOrbitPoint(phase, 0.82, LRO_INCLINATION_RAD);
-      orbiter.position.copy(position);
-      orbiter.lookAt(0, 0, 0);
-      orbiter.rotateY(Math.PI * 0.5);
-      orbit.material.opacity = isMoonFocus ? 0.20 : 0.08;
-      orbiter.scale.setScalar(isMoonFocus ? 1.08 : 0.92);
+      const lroPhase = getLroPhase(now, t);
+      const lroPosition = lunarOrbitPoint(lroPhase, 0.82, LRO_INCLINATION_RAD);
+
+      lroOrbiter.position.copy(lroPosition);
+      lroOrbiter.lookAt(0, 0, 0);
+      lroOrbiter.rotateY(Math.PI * 0.5);
+      lroOrbit.material.opacity = isMoonFocus ? 0.20 : 0.08;
+      lroOrbiter.scale.setScalar(isMoonFocus ? 1.08 : 0.92);
     }
   };
 }
@@ -643,6 +693,82 @@ function createLroStyleOrbiter(gltfLoader) {
 }
 
 
+function createGatewaySystem(gltfLoader, renderer) {
+  const root = new THREE.Group();
+  root.name = "Gateway Orbit System";
+
+  const orbitRadius = MOON_RADIUS + 0.64;
+  const orbitInclination = THREE.MathUtils.degToRad(68);
+  const orbitLine = createGatewayOrbitLine(orbitRadius, orbitInclination);
+  const anchor = new THREE.Group();
+  anchor.name = "Gateway Anchor";
+  anchor.visible = false;
+
+  root.add(orbitLine, anchor);
+
+  // --- Real-size scaling for Gateway based on Moon radius ---
+  // Gateway length (Habitation + Power + Logistics) ~ 40m (approximate)
+  // Use same real-size scaling as ISS, but with Gateway's length
+  const GATEWAY_LENGTH_METERS = 40;
+  const gatewaySceneSize = (GATEWAY_LENGTH_METERS / MOON_DIAMETER_METERS) * MOON_SCENE_DIAMETER * VISUAL_FACTOR;
+
+  gltfLoader.load(
+    MODEL_PATHS.gateway,
+    (gltf) => {
+      const model = gltf.scene;
+      model.name = "Gateway Core";
+      normalizeModel(model, gatewaySceneSize, VISUAL_FACTOR);
+      prepareModel(model);
+      enhanceImportedModel(model, renderer);
+      model.rotation.set(
+        THREE.MathUtils.degToRad(18),
+        THREE.MathUtils.degToRad(-28),
+        THREE.MathUtils.degToRad(6)
+      );
+      anchor.add(model);
+      anchor.visible = true;
+      if (loaderDetail) loaderDetail.textContent = "Gateway Core loaded";
+    },
+    (xhr) => {
+      updateLoaderProgress("Gateway model", xhr.loaded, xhr.total);
+    },
+    (error) => {
+      console.warn("Gateway GLB 加载失败:", error);
+      anchor.visible = false;
+    }
+  );
+
+  const GATEWAY_ORBITAL_PERIOD_S = 604800;
+  const GATEWAY_EPOCH = Date.UTC(2026, 0, 1, 0, 0, 0);
+
+  function getGatewayPhase(now, t) {
+    const elapsed = (now.getTime() - GATEWAY_EPOCH) / 1000;
+    const realtimePhase = (elapsed / GATEWAY_ORBITAL_PERIOD_S) * Math.PI * 2;
+    const visualPhase = (t / GATEWAY_ORBITAL_PERIOD_S) * Math.PI * 2 * GATEWAY_VISUAL_SPEED;
+    return (realtimePhase + visualPhase) % (Math.PI * 2);
+  }
+
+  return {
+    root,
+    anchor,
+    orbitLine,
+    animate(t, sunDirection, isMoonFocus) {
+      const now = new Date();
+      const phase = getGatewayPhase(now, t);
+      const position = lunarOrbitPoint(phase, orbitRadius, orbitInclination);
+      position.x *= 1.42;
+      position.z *= 0.72;
+
+      anchor.position.copy(position);
+      anchor.lookAt(0, 0, 0);
+      anchor.rotateY(Math.PI * 0.5);
+      anchor.scale.setScalar(isMoonFocus ? 1.08 : 0.92);
+      orbitLine.material.opacity = isMoonFocus ? 0.18 : 0.06;
+    }
+  };
+}
+
+
 function createLunarOrbitLine(radius, inclination) {
   const points = [];
 
@@ -660,6 +786,28 @@ function createLunarOrbitLine(radius, inclination) {
     })
   );
 }
+
+function createGatewayOrbitLine(radius, inclination) {
+  const points = [];
+
+  for (let i = 0; i <= 360; i += 1) {
+    const phase = (i / 360) * Math.PI * 2;
+    const point = lunarOrbitPoint(phase, radius, inclination);
+    point.x *= 1.42;
+    point.z *= 0.72;
+    points.push(point);
+  }
+
+  return new THREE.Line(
+    new THREE.BufferGeometry().setFromPoints(points),
+    new THREE.LineBasicMaterial({
+      color: "#ffd28a",
+      transparent: true,
+      opacity: 0.08
+    })
+  );
+}
+
 
 function lunarOrbitPoint(phase, radius, inclination) {
   return new THREE.Vector3(
@@ -686,17 +834,16 @@ function pickSceneObject(event, canvas, camera, raycaster, pointer, objects) {
       ? y > rect.height * 0.12 && y < rect.height * 0.88
       : y > rect.height * 0.22 && y < rect.height * 0.80;
 
-    if (objects.sceneFocus === "moon") {
+    const focusDomain = getFocusSceneDomain(objects.sceneFocus);
+    if (focusDomain === "moon" || focusDomain === "sun") {
       const isLeftReturnZone = isLandscape
         ? x < rect.width * 0.34
         : x < rect.width * 0.40;
-
       if (isLeftReturnZone && isMiddleZone) return "earth";
     } else {
       const isRightMoonZone = isLandscape
         ? x > rect.width * 0.56
         : x > rect.width * 0.42;
-
       if (isRightMoonZone && isMiddleZone) return "moon";
     }
   }
@@ -714,19 +861,48 @@ function pickSceneObject(event, canvas, camera, raycaster, pointer, objects) {
     return Math.hypot(event.clientX - x, event.clientY - y) < Math.max(minPixels, radius * multiplier);
   };
 
-  if (objects.sceneFocus === "moon") {
+  // --- sun picking helper ---
+  const hitSun = () => {
+    if (!objects.sunSystem || !objects.sunSystem.visible) return false;
+
+    const sunHits = raycaster.intersectObject(objects.sunSystem, true).filter((hit) => {
+      if (!hit.object.visible) return false;
+      const name = (hit.object.name || "").toLowerCase();
+      return !name.includes("particle");
+    });
+
+    if (sunHits.length > 0) return true;
+
+    return hitScreenSphere(
+      objects.sunSystem,
+      SUN_BASE_SIZE * 3.1,
+      objects.isMobile ? 210 : 150,
+      objects.isMobile ? 5.2 : 4.4
+    );
+  };
+
+  const focusDomain = getFocusSceneDomain(objects.sceneFocus);
+
+  if (focusDomain === "moon" || focusDomain === "sun") {
     const earthHits = raycaster.intersectObject(objects.earth, true);
     if (earthHits.length > 0) return "earth";
 
-    if (hitScreenSphere(objects.earth, EARTH_RADIUS, 280, 2.6)) {
+    const earthReturnMinPixels = focusDomain === "sun" ? 150 : 320;
+    const earthReturnMultiplier = focusDomain === "sun" ? 1.65 : 3.2;
+
+    if (hitScreenSphere(objects.earth, EARTH_RADIUS, earthReturnMinPixels, earthReturnMultiplier)) {
       return "earth";
     }
+  }
+
+  if (focusDomain === "moon" && hitSun()) {
+    return "sun";
   }
 
   const moonHits = raycaster.intersectObjects([objects.moonHitArea, objects.moon], true);
   if (moonHits.length > 0) return "moon";
 
-  if (hitScreenSphere(objects.moon, MOON_RADIUS, objects.isMobile ? 220 : 140, objects.isMobile ? 5 : 3)) {
+  if (hitScreenSphere(objects.moon, MOON_RADIUS, objects.isMobile ? 240 : 170, objects.isMobile ? 5.6 : 3.8)) {
     return "moon";
   }
 
@@ -736,7 +912,7 @@ function pickSceneObject(event, canvas, camera, raycaster, pointer, objects) {
 
     const isMiddleY = y > rect.height * 0.26 && y < rect.height * 0.76;
 
-    if (objects.sceneFocus === "moon") {
+    if (focusDomain === "moon" || focusDomain === "sun") {
       const isLeftEarthReturnZone = x < rect.width * 0.28 && isMiddleY;
 
       if (isLeftEarthReturnZone) return "earth";
@@ -747,12 +923,16 @@ function pickSceneObject(event, canvas, camera, raycaster, pointer, objects) {
     }
   }
 
+  if (focusDomain !== "sun" && hitSun()) return "sun";
+
   const earthHits = raycaster.intersectObject(objects.earth, true);
   if (earthHits.length > 0) return "earth";
 
   if (hitScreenSphere(objects.earth, EARTH_RADIUS, 180, 1.8)) {
     return "earth";
   }
+
+  if (hitSun()) return "sun";
 
   return null;
 }
@@ -862,6 +1042,7 @@ function createMoon(gltfLoader, textureLoader, renderer) {
 
   let activeMoon = fallback;
 
+  // --- Moon 小模型及 8K/23K 加载逻辑保持原有 ---
   gltfLoader.load(
     MODEL_PATHS.moonSmall,
     (gltf) => {
@@ -912,6 +1093,7 @@ function createMoon(gltfLoader, textureLoader, renderer) {
       console.warn("Moon small GLB 加载失败，继续使用 fallback:", error);
     }
   );
+  // --- End Moon 8K/23K 加载 ---
 
   const rim = new THREE.Mesh(
     new THREE.SphereGeometry(MOON_RADIUS * 1.055, 128, 128),
@@ -1016,17 +1198,24 @@ function makeMoonOrbitLine() {
   );
 }
 
+function getFocusSceneDomain(mode) {
+  if (mode === "moon" || mode === "lro" || mode === "gateway") return "moon";
+  if (mode === "sun") return "sun";
+  return "earth";
+}
+
 function updateSceneTitle(mode) {
   if (!sceneTitleMain || !sceneTitleSub) return;
 
   const title = sceneTitleMain.closest(".scene-title");
   const isMoon = mode === "moon";
-  const nextMain = isMoon ? "Moon" : "Earth";
+  const isSun = mode === "sun";
+  const nextMain = isSun ? "Sun" : isMoon ? "Moon" : "Earth";
 
   if (sceneTitleMain.textContent === nextMain) return;
 
-  const exitClass = isMoon ? "is-slide-down" : "is-slide-up";
-  const enterClass = isMoon ? "is-enter-from-up" : "is-enter-from-down";
+  const exitClass = isMoon || isSun ? "is-slide-down" : "is-slide-up";
+  const enterClass = isMoon || isSun ? "is-enter-from-up" : "is-enter-from-down";
 
   title.classList.remove(
     "is-slide-down",
@@ -1052,23 +1241,25 @@ function updateSceneTitle(mode) {
 
 
 function bindSceneFocusControls(onChange) {
-  document.querySelectorAll("[data-scene-focus]").forEach((button) => {
-    button.addEventListener("click", () => {
-      const mode = button.dataset.sceneFocus;
-      const wasActive = button.classList.contains("is-active");
+  document.addEventListener("click", (event) => {
+    const button = event.target.closest("[data-scene-focus]");
+    if (!button) return;
 
-      document.querySelectorAll("[data-scene-focus]").forEach((item) => {
-        item.classList.remove("is-active");
-      });
+    const mode = button.dataset.sceneFocus;
+    const wasActive = button.classList.contains("is-active");
 
-      if (!wasActive) {
-        button.classList.add("is-active");
-      }
-
-      onChange(mode);
+    document.querySelectorAll("[data-scene-focus]").forEach((item) => {
+      item.classList.remove("is-active");
     });
+
+    if (!wasActive) {
+      button.classList.add("is-active");
+    }
+
+    onChange(mode);
   });
 }
+
 
 function captureSceneView(camera, controls) {
   return {
@@ -1096,8 +1287,8 @@ function updateRestoreCamera(camera, controls, view) {
   });
 }
 
-function updateSceneFocusCamera(camera, controls, mode, issAnchor, satelliteSystem, lunarSystem, shouldAutoZoom = false) {
-  const target = getSceneFocusTarget(mode, issAnchor, satelliteSystem, lunarSystem);
+function updateSceneFocusCamera(camera, controls, mode, issAnchor, satelliteSystem, lunarSystem, gatewaySystem, sunSystem, shouldAutoZoom = false) {
+  const target = getSceneFocusTarget(mode, issAnchor, satelliteSystem, lunarSystem, gatewaySystem, sunSystem);
   const desiredDistance = getSceneFocusDistance(mode);
 
   const previousTarget = controls.target.clone();
@@ -1113,9 +1304,11 @@ function updateSceneFocusCamera(camera, controls, mode, issAnchor, satelliteSyst
   );
 }
 
-function getSceneFocusTarget(mode, issAnchor, satelliteSystem, lunarSystem) {
+function getSceneFocusTarget(mode, issAnchor, satelliteSystem, lunarSystem, gatewaySystem, sunSystem) {
   if (mode === "moon") return new THREE.Vector3(MOON_DISPLAY_DISTANCE, 0.65, -1.25);
   if (mode === "lro") return lunarSystem.orbiter.getWorldPosition(new THREE.Vector3());
+  if (mode === "gateway") return gatewaySystem.anchor.getWorldPosition(new THREE.Vector3());
+  if (mode === "sun" && sunSystem) return sunSystem.getWorldPosition(new THREE.Vector3());
   if (mode === "iss") return issAnchor.position.clone();
 
   if (mode === "starlink") {
@@ -1141,6 +1334,8 @@ function getFirstSatellitePosition(system, key) {
 function getSceneFocusDistance(mode) {
   if (mode === "moon") return 2.05;
   if (mode === "lro") return 0.28;
+  if (mode === "gateway") return isMobile ? 0.56 : 0.38;
+  if (mode === "sun") return isMobile ? 2.6 : 1.85;
   if (mode === "iss") return isMobile ? 0.48 : 0.26;
   if (mode === "starlink") return isMobile ? 0.62 : 0.36;
   if (mode === "weather") return isMobile ? 0.86 : 0.52;
@@ -1235,11 +1430,12 @@ function createSatelliteSystem(loader) {
     loadSatelliteModel(loader, config, layer.userData.items);
   });
 
-  function getSatellitePhase(sat, now) {
-    // UTC-based phase
+  function getSatellitePhase(sat, now, t) {
+    // UTC-based baseline with visual acceleration for readable motion
     const elapsed = (now.getTime() - sat.epoch) / 1000;
-    // phase increases with time, plus offset for satellite's position in its plane
-    return ((elapsed / sat.period) * Math.PI * 2 + sat.phaseOffset) % (Math.PI * 2);
+    const realtimePhase = (elapsed / sat.period) * Math.PI * 2;
+    const visualPhase = (t / sat.period) * Math.PI * 2 * EARTH_SAT_VISUAL_SPEED;
+    return (realtimePhase + visualPhase + sat.phaseOffset) % (Math.PI * 2);
   }
 
   return {
@@ -1257,8 +1453,8 @@ function createSatelliteSystem(loader) {
               ? isMobile ? 1.55 : 1.28
               : isMobile ? 4.2 : 2.8
             : 1;
-          // Calculate UTC-based phase
-          const phase = getSatellitePhase(satellite.userData, now);
+          // Calculate UTC-based phase plus visual speed
+          const phase = getSatellitePhase(satellite.userData, now, t);
           const position = orbitPosition(
             phase,
             satellite.userData.radius,
@@ -1411,7 +1607,9 @@ function updateIssReadout() {
   // Coordinate HUD removed.
 }
 
-function normalizeModel(model, targetSize = 1) {
+function normalizeModel(model, targetSize = 1, visualFactor = 1) {
+  // For ISS and Gateway, targetSize should already include VISUAL_FACTOR.
+  // For Moon and others, keep as-is.
   const box = new THREE.Box3().setFromObject(model);
   const size = new THREE.Vector3();
   const center = new THREE.Vector3();
@@ -1420,7 +1618,12 @@ function normalizeModel(model, targetSize = 1) {
   box.getCenter(center);
 
   const maxAxis = Math.max(size.x, size.y, size.z) || 1;
-  const scale = targetSize / maxAxis;
+  let scale = targetSize / maxAxis;
+
+  // If visualFactor is provided and not 1, multiply scale (for ISS/Gateway only)
+  if (visualFactor && visualFactor !== 1) {
+    scale *= 1; // Already applied in targetSize, so keep as-is.
+  }
 
   model.scale.setScalar(scale);
   model.position.sub(center.multiplyScalar(scale));
@@ -1556,6 +1759,373 @@ function makeOrbitLine() {
       opacity: 0.58
     })
   );
+}
+
+function createSunSystem(gltfLoader, renderer) {
+  const root = new THREE.Group();
+  root.name = "Sun System";
+  root.visible = false;
+
+  const fallback = createFallbackSunSphere();
+  fallback.visible = false;
+  root.add(fallback);
+
+  const glowHalo = createSunHaloSprite();
+  const flareGroup = createSolarFlares();
+  const particles = createSolarParticles();
+
+  const glowLight = new THREE.PointLight(0xffb05a, 6.2, 96);
+  glowLight.name = "Sun Glow Light";
+
+  root.add(glowHalo, flareGroup, particles, glowLight);
+
+  gltfLoader.load(
+    MODEL_PATHS.sun,
+    (gltf) => {
+      const model = gltf.scene;
+      model.name = "Sun GLB";
+      normalizeModel(model, SUN_BASE_SIZE * 2.05);
+      prepareModel(model);
+      enhanceSunModel(model, renderer);
+      root.add(model);
+      fallback.visible = false;
+      root.userData.sunModel = model;
+      if (loaderDetail) loaderDetail.textContent = "Sun GLB loaded";
+    },
+    (xhr) => {
+      updateLoaderProgress("Sun model", xhr.loaded, xhr.total);
+    },
+    (error) => {
+      console.warn("Sun GLB 加载失败，继续使用极简 fallback:", error);
+      fallback.visible = true;
+      root.userData.sunModel = fallback;
+    }
+  );
+
+  return root;
+}
+
+function createFallbackSunSphere() {
+  const sphere = new THREE.Mesh(
+    new THREE.SphereGeometry(SUN_BASE_SIZE, 96, 96),
+    new THREE.MeshBasicMaterial({
+      color: 0xff9b24,
+      transparent: true,
+      opacity: 0.92,
+      depthWrite: false,
+      blending: THREE.AdditiveBlending
+    })
+  );
+  sphere.name = "Sun Fallback";
+  return sphere;
+}
+
+function enhanceSunModel(model, renderer) {
+  const maxAnisotropy = renderer?.capabilities?.getMaxAnisotropy?.() || 8;
+
+  model.traverse((object) => {
+    const objectName = (object.name || "").toLowerCase();
+
+    if (
+      objectName.includes("flare") ||
+      objectName.includes("loop") ||
+      objectName.includes("eruption") ||
+      objectName.includes("arc") ||
+      objectName.includes("corona") ||
+      objectName.includes("particle")
+    ) {
+      object.visible = false;
+      return;
+    }
+
+    if (!object.isMesh || !object.material) return;
+
+    object.frustumCulled = false;
+    object.castShadow = false;
+    object.receiveShadow = false;
+
+    const materials = Array.isArray(object.material) ? object.material : [object.material];
+    materials.forEach((material) => {
+      if (!material) return;
+
+      const baseColor = material.color?.isColor ? material.color.clone() : new THREE.Color(0xff8f1f);
+      const map = material.map || null;
+      const emissiveMap = material.emissiveMap || null;
+
+      const sunMaterial = new THREE.MeshBasicMaterial({
+        color: baseColor.multiplyScalar(1.25),
+        map,
+        transparent: false,
+        depthWrite: false,
+        blending: THREE.AdditiveBlending
+      });
+
+      if (emissiveMap && !sunMaterial.map) {
+        sunMaterial.map = emissiveMap;
+      }
+
+      if (sunMaterial.map) {
+        sunMaterial.map.colorSpace = THREE.SRGBColorSpace;
+        sunMaterial.map.anisotropy = maxAnisotropy;
+        sunMaterial.map.minFilter = THREE.LinearMipmapLinearFilter;
+        sunMaterial.map.magFilter = THREE.LinearFilter;
+        sunMaterial.map.generateMipmaps = true;
+        sunMaterial.map.needsUpdate = true;
+      }
+
+      object.material = sunMaterial;
+    });
+  });
+}
+function createRadialGlowTexture(size = 256) {
+  const canvas = document.createElement("canvas");
+  canvas.width = size;
+  canvas.height = size;
+  const ctx = canvas.getContext("2d");
+  const center = size / 2;
+  const gradient = ctx.createRadialGradient(center, center, 0, center, center, center);
+
+  gradient.addColorStop(0.0, "rgba(255, 245, 180, 1)");
+  gradient.addColorStop(0.16, "rgba(255, 194, 66, .94)");
+  gradient.addColorStop(0.36, "rgba(255, 110, 22, .44)");
+  gradient.addColorStop(0.62, "rgba(255, 74, 6, .16)");
+  gradient.addColorStop(1.0, "rgba(255, 74, 6, 0)");
+
+  ctx.fillStyle = gradient;
+  ctx.fillRect(0, 0, size, size);
+
+  const texture = new THREE.CanvasTexture(canvas);
+  texture.colorSpace = THREE.SRGBColorSpace;
+  texture.needsUpdate = true;
+  return texture;
+}
+
+function createSunHaloSprite() {
+  const texture = createRadialGlowTexture(512);
+  const halo = new THREE.Sprite(
+    new THREE.SpriteMaterial({
+      map: texture,
+      color: 0xff9d2c,
+      transparent: true,
+      opacity: 0.86,
+      depthWrite: false,
+      blending: THREE.AdditiveBlending
+    })
+  );
+
+  halo.name = "Sun Halo";
+  halo.scale.setScalar(SUN_BASE_SIZE * 5.3);
+  return halo;
+}
+
+function createSolarFlares() {
+  const flareGroup = new THREE.Group();
+  flareGroup.name = "Solar Flares";
+  const texture = createRadialGlowTexture(256);
+
+  for (let i = 0; i < 10; i += 1) {
+    const flare = new THREE.Sprite(
+      new THREE.SpriteMaterial({
+        map: texture,
+        color: i % 3 === 0 ? 0xffd27a : 0xff8a22,
+        transparent: true,
+        opacity: 0.0,
+        depthWrite: false,
+        blending: THREE.AdditiveBlending
+      })
+    );
+
+    const angle = (i / 10) * Math.PI * 2 + Math.random() * 0.18;
+    flare.position.set(
+      Math.cos(angle) * SUN_BASE_SIZE * 1.22,
+      Math.sin(angle) * SUN_BASE_SIZE * 1.22,
+      (Math.random() - 0.5) * SUN_BASE_SIZE * 0.12
+    );
+    flare.userData.angle = angle;
+    flare.userData.baseScale = SUN_BASE_SIZE * (0.72 + Math.random() * 0.76);
+    flare.userData.speed = 0.65 + Math.random() * 1.25;
+    flare.userData.offset = Math.random() * Math.PI * 2;
+    flareGroup.add(flare);
+  }
+
+  return flareGroup;
+}
+
+function createSolarParticles() {
+  const count = isMobile ? 220 : 520;
+  const positions = new Float32Array(count * 3);
+  const colors = new Float32Array(count * 3);
+  const baseAngles = new Float32Array(count);
+  const startTimes = new Float32Array(count);
+  const lifeTimes = new Float32Array(count);
+  const speeds = new Float32Array(count);
+  const zOffsets = new Float32Array(count);
+
+  for (let i = 0; i < count; i += 1) {
+    const angle = Math.random() * Math.PI * 2;
+    const start = Math.random() * 4.8;
+    const life = 1.4 + Math.random() * 2.8;
+    const speed = 0.18 + Math.random() * 0.42;
+    const z = (Math.random() - 0.5) * SUN_BASE_SIZE * 0.45;
+    const radius = SUN_BASE_SIZE * (1.04 + Math.random() * 0.12);
+
+    positions[i * 3] = Math.cos(angle) * radius;
+    positions[i * 3 + 1] = Math.sin(angle) * radius;
+    positions[i * 3 + 2] = z;
+
+    const warmth = 0.58 + Math.random() * 0.42;
+    colors[i * 3] = 1.0;
+    colors[i * 3 + 1] = 0.34 + warmth * 0.42;
+    colors[i * 3 + 2] = 0.04 + warmth * 0.12;
+
+    baseAngles[i] = angle;
+    startTimes[i] = start;
+    lifeTimes[i] = life;
+    speeds[i] = speed;
+    zOffsets[i] = z;
+  }
+
+  const geometry = new THREE.BufferGeometry();
+  geometry.setAttribute("position", new THREE.BufferAttribute(positions, 3));
+  geometry.setAttribute("color", new THREE.BufferAttribute(colors, 3));
+
+  const particles = new THREE.Points(
+    geometry,
+    new THREE.PointsMaterial({
+      size: isMobile ? 0.045 : 0.032,
+      transparent: true,
+      opacity: 0.46,
+      vertexColors: true,
+      depthWrite: false,
+      blending: THREE.AdditiveBlending
+    })
+  );
+
+  particles.name = "Solar Particles";
+  particles.userData.baseAngles = baseAngles;
+  particles.userData.startTimes = startTimes;
+  particles.userData.lifeTimes = lifeTimes;
+  particles.userData.speeds = speeds;
+  particles.userData.zOffsets = zOffsets;
+  return particles;
+}
+
+function animateSunSystem(root, t, sunDirection) {
+  if (!root) return;
+
+  root.visible = true;
+  root.position.copy(sunDirection.clone().multiplyScalar(SUN_DISTANCE));
+  root.lookAt(0, 0, 0);
+
+  const sunModel = root.getObjectByName("Sun GLB") || root.getObjectByName("Sun Fallback");
+  const halo = root.getObjectByName("Sun Halo");
+  const flares = root.getObjectByName("Solar Flares");
+  const particles = root.getObjectByName("Solar Particles");
+
+  if (sunModel) {
+    sunModel.rotation.y = t * 0.035;
+    sunModel.rotation.z = Math.sin(t * 0.18) * 0.018;
+  }
+
+  if (halo) {
+    halo.material.opacity = 0.48 + Math.sin(t * 0.85) * 0.06;
+    halo.scale.setScalar(SUN_BASE_SIZE * (4.2 + Math.sin(t * 0.62) * 0.16));
+  }
+
+  if (flares) {
+    if (!flares.userData.nextBurstAt) {
+      flares.userData.nextBurstAt = t + 0.4 + Math.random() * 0.8;
+    }
+
+    if (t > flares.userData.nextBurstAt) {
+      const burstCount = Math.random() > 0.72 ? 2 : 1;
+
+      for (let i = 0; i < burstCount; i += 1) {
+        const flare = flares.children[Math.floor(Math.random() * flares.children.length)];
+        const angle = Math.random() * Math.PI * 2;
+
+        flare.userData.angle = angle;
+        flare.userData.startedAt = t;
+        flare.userData.life = 1.2 + Math.random() * 2.4;
+        flare.userData.power = 0.68 + Math.random() * 1.25;
+        flare.userData.curve = (Math.random() - 0.5) * 0.42;
+        flare.position.z = (Math.random() - 0.5) * SUN_BASE_SIZE * 0.2;
+      }
+
+      flares.userData.nextBurstAt = t + 0.45 + Math.random() * 1.45;
+    }
+
+    flares.children.forEach((flare) => {
+      const startedAt = flare.userData.startedAt ?? -999;
+      const life = flare.userData.life ?? 1;
+      const age = t - startedAt;
+      const progress = THREE.MathUtils.clamp(age / life, 0, 1);
+
+      if (progress >= 1) {
+        flare.material.opacity = 0;
+        return;
+      }
+
+      const rise = Math.sin(progress * Math.PI);
+      const angle = (flare.userData.angle ?? 0) + (flare.userData.curve ?? 0) * progress;
+      const power = flare.userData.power ?? 1;
+      const radius = SUN_BASE_SIZE * (1.05 + progress * 0.42 * power);
+
+      flare.position.set(
+        Math.cos(angle) * radius,
+        Math.sin(angle) * radius,
+        flare.position.z
+      );
+      flare.scale.set(
+        SUN_BASE_SIZE * (0.20 + rise * 0.22) * power,
+        SUN_BASE_SIZE * (0.46 + rise * 1.42) * power,
+        1
+      );
+      flare.material.opacity = rise * 0.34;
+    });
+  }
+
+  if (particles) {
+    const position = particles.geometry.attributes.position;
+    const color = particles.geometry.attributes.color;
+    const baseAngles = particles.userData.baseAngles;
+    const startTimes = particles.userData.startTimes;
+    const lifeTimes = particles.userData.lifeTimes;
+    const speeds = particles.userData.speeds;
+    const zOffsets = particles.userData.zOffsets;
+
+    for (let i = 0; i < position.count; i += 1) {
+      let age = t - startTimes[i];
+
+      if (age > lifeTimes[i]) {
+        baseAngles[i] = Math.random() * Math.PI * 2;
+        startTimes[i] = t + Math.random() * 0.45;
+        lifeTimes[i] = 1.2 + Math.random() * 3.2;
+        speeds[i] = 0.18 + Math.random() * 0.52;
+        zOffsets[i] = (Math.random() - 0.5) * SUN_BASE_SIZE * 0.48;
+        age = 0;
+      }
+
+      const progress = THREE.MathUtils.clamp(age / lifeTimes[i], 0, 1);
+      const angle = baseAngles[i] + Math.sin(t * 0.55 + i * 0.13) * 0.08 * progress;
+      const burst = Math.sin(progress * Math.PI);
+      const radius = SUN_BASE_SIZE * (1.03 + progress * speeds[i] * 3.2);
+      const turbulence = Math.sin(t * 2.1 + i * 1.37) * 0.045 * burst;
+
+      position.array[i * 3] = Math.cos(angle) * radius + Math.cos(angle + Math.PI * 0.5) * turbulence;
+      position.array[i * 3 + 1] = Math.sin(angle) * radius + Math.sin(angle + Math.PI * 0.5) * turbulence;
+      position.array[i * 3 + 2] = zOffsets[i] + Math.sin(t * 1.6 + i) * 0.025 * burst;
+
+      const alphaProxy = Math.max(0, 1 - progress) * burst;
+      color.array[i * 3] = 1.0;
+      color.array[i * 3 + 1] = 0.32 + alphaProxy * 0.48;
+      color.array[i * 3 + 2] = 0.04 + alphaProxy * 0.13;
+    }
+
+    position.needsUpdate = true;
+    color.needsUpdate = true;
+    particles.material.opacity = 0.34 + Math.sin(t * 1.05) * 0.035;
+  }
 }
 
 
